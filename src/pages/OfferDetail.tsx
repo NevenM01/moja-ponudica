@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Download, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +78,10 @@ const OfferDetail = () => {
     }
   };
 
+  const formatNumber = (num: number) => {
+    return num.toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -97,8 +100,9 @@ const OfferDetail = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="max-w-4xl mx-auto space-y-4">
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 print:hidden">
           <Link to="/ponude">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -109,122 +113,151 @@ const OfferDetail = () => {
             <Link to={`/ponuda/${id}/uredi`} className="flex-1 sm:flex-none">
               <Button variant="outline" size="sm" className="w-full">
                 <Pencil className="h-4 w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Uredi</span>
-                <span className="sm:hidden">Uredi</span>
+                Uredi
               </Button>
             </Link>
             <Button onClick={handleDownloadPDF} size="sm" className="flex-1 sm:flex-none">
               <Download className="h-4 w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Preuzmi PDF</span>
-              <span className="sm:hidden">PDF</span>
+              PDF
             </Button>
           </div>
         </div>
 
-        {companyProfile && (
-          <div className="bg-muted rounded-lg p-3 md:p-4 border border-border">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">Tvrtka:</span>
-                <p className="font-medium">{companyProfile.naziv_firme}</p>
+        {/* Offer document */}
+        <div className="bg-card border border-border rounded-lg p-6 md:p-8 space-y-6">
+          {/* Header: Logo + Company info */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4 pb-4 border-b border-border">
+            <div className="flex-shrink-0">
+              {companyProfile?.logo_url ? (
+                <img
+                  src={companyProfile.logo_url}
+                  alt="Logo"
+                  className="h-16 md:h-20 w-auto object-contain"
+                />
+              ) : (
+                <div className="h-16 md:h-20 w-32 bg-muted rounded flex items-center justify-center text-muted-foreground text-sm">
+                  Logo
+                </div>
+              )}
+            </div>
+            {companyProfile && (
+              <div className="text-right text-sm space-y-0.5">
+                <p className="font-bold text-foreground">{companyProfile.naziv_firme}</p>
+                <p className="text-muted-foreground">{companyProfile.adresa}</p>
+                <p className="text-muted-foreground">OIB: {companyProfile.oib}</p>
+                {companyProfile.telefon && (
+                  <p className="text-muted-foreground">Tel: {companyProfile.telefon}</p>
+                )}
+                {companyProfile.email && (
+                  <p className="text-muted-foreground">{companyProfile.email}</p>
+                )}
               </div>
-              <div>
-                <span className="text-muted-foreground">OIB:</span>
-                <p className="font-medium">{companyProfile.oib}</p>
+            )}
+          </div>
+
+          {/* Client info + Date info */}
+          <div className="flex flex-col md:flex-row justify-between gap-4 py-4 border-b border-border">
+            <div className="space-y-1 text-sm">
+              <p className="text-muted-foreground">Kupac:</p>
+              <p className="font-bold text-foreground">{offer.client_naziv}</p>
+              {offer.client_adresa && (
+                <p className="text-muted-foreground">{offer.client_adresa}</p>
+              )}
+              {offer.client_oib && (
+                <p className="text-muted-foreground">OIB: {offer.client_oib}</p>
+              )}
+            </div>
+            <div className="text-sm text-right space-y-0.5">
+              <p className="text-muted-foreground">
+                Datum ponude: {format(new Date(offer.created_at), 'dd.MM.yyyy.')}
+              </p>
+            </div>
+          </div>
+
+          {/* Offer title */}
+          <div className="text-center py-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Ponuda #{offer.offer_number.split('-').pop()}
+            </h1>
+          </div>
+
+          {/* Items table - Desktop */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-t-2 border-b-2 border-foreground/20">
+                  <TableHead className="font-bold text-foreground">Naziv</TableHead>
+                  <TableHead className="text-center font-bold text-foreground">Količina</TableHead>
+                  <TableHead className="text-right font-bold text-foreground">Cijena</TableHead>
+                  <TableHead className="text-right font-bold text-foreground">Ukupno</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id} className="border-b border-border">
+                    <TableCell className="text-foreground">{item.opis}</TableCell>
+                    <TableCell className="text-center text-foreground">{Number(item.kolicina)}</TableCell>
+                    <TableCell className="text-right text-foreground">{formatNumber(Number(item.cijena))}</TableCell>
+                    <TableCell className="text-right font-medium text-foreground">{formatNumber(Number(item.ukupno))}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Items - Mobile */}
+          <div className="md:hidden space-y-3">
+            <div className="grid grid-cols-4 gap-2 py-2 border-t-2 border-b-2 border-foreground/20 text-sm font-bold">
+              <span className="col-span-2">Naziv</span>
+              <span className="text-right">Cijena</span>
+              <span className="text-right">Ukupno</span>
+            </div>
+            {items.map((item) => (
+              <div key={item.id} className="grid grid-cols-4 gap-2 py-2 border-b border-border text-sm">
+                <span className="col-span-2">
+                  {item.opis}
+                  <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)}</span>
+                </span>
+                <span className="text-right">{formatNumber(Number(item.cijena))}</span>
+                <span className="text-right font-medium">{formatNumber(Number(item.ukupno))}</span>
               </div>
-              <div>
-                <span className="text-muted-foreground">Adresa:</span>
-                <p className="font-medium">{companyProfile.adresa}</p>
+            ))}
+          </div>
+
+          {/* Totals */}
+          <div className="pt-4 border-t-2 border-foreground/20">
+            <div className="flex flex-col items-end space-y-1 text-sm">
+              <div className="flex justify-between w-48">
+                <span className="text-muted-foreground">Ukupno:</span>
+                <span className="font-medium text-foreground">{formatNumber(Number(offer.ukupno))} €</span>
               </div>
-              <div>
-                <span className="text-muted-foreground">IBAN:</span>
-                <p className="font-medium">{companyProfile.iban || '-'}</p>
+              <div className="flex justify-between w-48 pt-2 border-t border-border">
+                <span className="font-bold text-foreground">Ukupno za platiti:</span>
+                <span className="font-bold text-foreground">{formatNumber(Number(offer.ukupno))} €</span>
               </div>
             </div>
           </div>
-        )}
 
-        <Card>
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-base md:text-lg">Ponuda {offer.offer_number}</span>
-              <span className="text-sm font-normal text-muted-foreground">
-                {format(new Date(offer.created_at), 'dd.MM.yyyy.')}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 pt-0 md:pt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 p-3 md:p-4 bg-muted/50 rounded-lg">
-              <div>
-                <span className="text-muted-foreground text-sm">Klijent:</span>
-                <p className="font-medium">{offer.client_naziv}</p>
+          {/* Note */}
+          {offer.napomena && (
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">Napomena:</p>
+              <p className="text-sm text-foreground mt-1">{offer.napomena}</p>
+            </div>
+          )}
+
+          {/* Footer with bank info */}
+          {companyProfile?.iban && (
+            <div className="pt-4 border-t border-border flex flex-col md:flex-row justify-between gap-4 text-sm">
+              <div className="text-muted-foreground">
+                <p>Način plaćanja: transakcijski račun</p>
               </div>
-              {offer.client_oib && (
-                <div>
-                  <span className="text-muted-foreground text-sm">OIB:</span>
-                  <p className="font-medium">{offer.client_oib}</p>
-                </div>
-              )}
-              {offer.client_adresa && (
-                <div>
-                  <span className="text-muted-foreground text-sm">Adresa:</span>
-                  <p className="font-medium">{offer.client_adresa}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Desktop table */}
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Opis</TableHead>
-                    <TableHead className="text-right">Količina</TableHead>
-                    <TableHead className="text-right">Cijena (€)</TableHead>
-                    <TableHead className="text-right">Ukupno (€)</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.opis}</TableCell>
-                      <TableCell className="text-right">{Number(item.kolicina).toFixed(2)}</TableCell>
-                      <TableCell className="text-right">{Number(item.cijena).toFixed(2)}</TableCell>
-                      <TableCell className="text-right font-medium">{Number(item.ukupno).toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile cards */}
-            <div className="md:hidden space-y-3">
-              {items.map((item) => (
-                <div key={item.id} className="border border-border rounded-lg p-3 bg-card">
-                  <p className="font-medium mb-2">{item.opis}</p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Količina: {Number(item.kolicina).toFixed(2)}</span>
-                    <span className="text-muted-foreground">Cijena: {Number(item.cijena).toFixed(2)} €</span>
-                  </div>
-                  <div className="flex justify-end mt-2">
-                    <span className="font-bold text-primary">{Number(item.ukupno).toFixed(2)} €</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end">
-              <div className="text-lg md:text-xl font-bold">Ukupno: {Number(offer.ukupno).toFixed(2)} €</div>
-            </div>
-
-            {offer.napomena && (
-              <div className="border-t border-border pt-4">
-                <span className="text-muted-foreground text-sm">Napomena:</span>
-                <p className="mt-1 text-sm md:text-base">{offer.napomena}</p>
+              <div className="text-right">
+                <p className="text-muted-foreground">IBAN: {companyProfile.iban}</p>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );
