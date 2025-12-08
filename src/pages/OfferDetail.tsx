@@ -99,7 +99,7 @@ const OfferDetail = () => {
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <Link to="/">
+          <Link to="/ponude">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Natrag
