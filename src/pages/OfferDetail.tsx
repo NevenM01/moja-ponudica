@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import { format } from 'date-fns';
@@ -105,10 +105,18 @@ const OfferDetail = () => {
               Natrag
             </Button>
           </Link>
-          <Button onClick={handleDownloadPDF}>
-            <Download className="h-4 w-4 mr-2" />
-            Preuzmi PDF
-          </Button>
+          <div className="flex gap-2">
+            <Link to={`/ponuda/${id}/uredi`}>
+              <Button variant="outline">
+                <Pencil className="h-4 w-4 mr-2" />
+                Uredi
+              </Button>
+            </Link>
+            <Button onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              Preuzmi PDF
+            </Button>
+          </div>
         </div>
 
         {companyProfile && (
