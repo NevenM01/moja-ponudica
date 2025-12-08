@@ -60,10 +60,10 @@ const OfferList = () => {
   return (
     <AppLayout>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Lista ponuda</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <CardTitle className="text-lg md:text-xl">Lista ponuda</CardTitle>
           <Link to="/nova-ponuda">
-            <Button>
+            <Button size="sm" className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Nova ponuda
             </Button>
@@ -77,28 +77,71 @@ const OfferList = () => {
               Nemate ponuda. Kreirajte prvu ponudu!
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Broj ponude</TableHead>
-                  <TableHead>Klijent</TableHead>
-                  <TableHead>Datum</TableHead>
-                  <TableHead className="text-right">Ukupno (€)</TableHead>
-                  <TableHead className="w-24"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Broj ponude</TableHead>
+                      <TableHead>Klijent</TableHead>
+                      <TableHead>Datum</TableHead>
+                      <TableHead className="text-right">Ukupno (€)</TableHead>
+                      <TableHead className="w-24"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {offers.map((offer) => (
+                      <TableRow key={offer.id}>
+                        <TableCell className="font-medium">{offer.offer_number}</TableCell>
+                        <TableCell>{offer.client_naziv}</TableCell>
+                        <TableCell>{format(new Date(offer.created_at), 'dd.MM.yyyy.')}</TableCell>
+                        <TableCell className="text-right">{Number(offer.ukupno).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Link to={`/ponuda/${offer.id}`}>
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(offer.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-3">
                 {offers.map((offer) => (
-                  <TableRow key={offer.id}>
-                    <TableCell className="font-medium">{offer.offer_number}</TableCell>
-                    <TableCell>{offer.client_naziv}</TableCell>
-                    <TableCell>{format(new Date(offer.created_at), 'dd.MM.yyyy.')}</TableCell>
-                    <TableCell className="text-right">{Number(offer.ukupno).toFixed(2)}</TableCell>
-                    <TableCell>
+                  <div
+                    key={offer.id}
+                    className="border border-border rounded-lg p-4 bg-card"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-medium text-sm">{offer.offer_number}</p>
+                        <p className="text-foreground">{offer.client_naziv}</p>
+                      </div>
+                      <p className="font-bold text-primary">{Number(offer.ukupno).toFixed(2)} €</p>
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(offer.created_at), 'dd.MM.yyyy.')}
+                      </p>
                       <div className="flex gap-2">
                         <Link to={`/ponuda/${offer.id}`}>
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4 mr-1" />
+                            Pogledaj
                           </Button>
                         </Link>
                         <Button
@@ -109,11 +152,11 @@ const OfferList = () => {
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

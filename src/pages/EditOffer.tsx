@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import CompanyInfoBox from '@/components/CompanyInfoBox';
-import { Link } from 'react-router-dom';
+import OfferItemsEditor from '@/components/OfferItemsEditor';
 
 interface OfferItem {
   id: string;
@@ -202,10 +201,10 @@ const EditOffer = () => {
 
   return (
     <AppLayout>
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 max-w-4xl mx-auto">
         <div className="flex items-center gap-4">
           <Link to={`/ponuda/${id}`}>
-            <Button type="button" variant="ghost">
+            <Button type="button" variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Natrag
             </Button>
@@ -215,10 +214,10 @@ const EditOffer = () => {
         <CompanyInfoBox profile={companyProfile} />
 
         <Card>
-          <CardHeader>
-            <CardTitle>Uredi ponudu - {offerNumber}</CardTitle>
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg">Uredi ponudu - {offerNumber}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 pt-0 md:pt-0">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="client_naziv">Naziv klijenta *</Label>
@@ -247,73 +246,13 @@ const EditOffer = () => {
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <Label>Stavke ponude</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Dodaj stavku
-                </Button>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40%]">Opis</TableHead>
-                    <TableHead>Količina</TableHead>
-                    <TableHead>Cijena (€)</TableHead>
-                    <TableHead>Ukupno (€)</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <Input
-                          value={item.opis}
-                          onChange={(e) => updateItem(item.id, 'opis', e.target.value)}
-                          placeholder="Opis stavke"
-                          required
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.kolicina}
-                          onChange={(e) => updateItem(item.id, 'kolicina', parseFloat(e.target.value) || 0)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.cijena}
-                          onChange={(e) => updateItem(item.id, 'cijena', parseFloat(e.target.value) || 0)}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">{item.ukupno.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeItem(item.id)}
-                          disabled={items.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="flex justify-end mt-4">
-                <div className="text-xl font-bold">Ukupno: {total.toFixed(2)} €</div>
-              </div>
-            </div>
+            <OfferItemsEditor
+              items={items}
+              onUpdateItem={updateItem}
+              onAddItem={addItem}
+              onRemoveItem={removeItem}
+              total={total}
+            />
 
             <div className="space-y-2">
               <Label htmlFor="napomena">Napomena</Label>
