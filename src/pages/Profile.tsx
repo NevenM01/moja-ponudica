@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
+import { Upload, X } from 'lucide-react';
 
 interface CompanyProfile {
   id?: string;
@@ -25,6 +26,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<CompanyProfile>({
     naziv_firme: '',
     oib: '',
@@ -50,6 +53,72 @@ const Profile = () => {
 
     if (data) {
       setProfile(data);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Greška', description: 'Molimo odaberite sliku', variant: 'destructive' });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: 'Greška', description: 'Slika mora biti manja od 2MB', variant: 'destructive' });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/logo.${fileExt}`;
+
+      // Delete old logo if exists
+      if (profile.logo_url) {
+        const oldPath = profile.logo_url.split('/company-logos/')[1];
+        if (oldPath) {
+          await supabase.storage.from('company-logos').remove([oldPath]);
+        }
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(fileName);
+
+      setProfile({ ...profile, logo_url: publicUrl });
+      toast({ title: 'Logo uploadan!' });
+    } catch (error: any) {
+      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!profile.logo_url || !user) return;
+
+    setUploading(true);
+    try {
+      const path = profile.logo_url.split('/company-logos/')[1];
+      if (path) {
+        await supabase.storage.from('company-logos').remove([path]);
+      }
+      setProfile({ ...profile, logo_url: '' });
+      toast({ title: 'Logo uklonjen' });
+    } catch (error: any) {
+      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -158,13 +227,50 @@ const Profile = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="logo_url">Logo URL</Label>
-                  <Input
-                    id="logo_url"
-                    value={profile.logo_url}
-                    onChange={(e) => setProfile({ ...profile, logo_url: e.target.value })}
-                    placeholder="https://..."
-                  />
+                  <Label>Logo tvrtke</Label>
+                  <div className="flex items-center gap-4">
+                    {profile.logo_url ? (
+                      <div className="relative">
+                        <img
+                          src={profile.logo_url}
+                          alt="Logo"
+                          className="w-20 h-20 object-contain rounded border border-border"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveLogo}
+                          disabled={uploading}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:opacity-80"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-20 h-20 border-2 border-dashed border-border rounded flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                      >
+                        <Upload className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                    {!profile.logo_url && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        {uploading ? 'Uploadanje...' : 'Odaberi sliku'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
               <Button type="submit" disabled={loading}>
