@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { FileText, User, Plus, List, Menu, X, LogOut } from 'lucide-react';
+import { FileText, User, Plus, List, Menu, LogOut, LayoutDashboard } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface AppLayoutProps {
@@ -15,7 +15,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const [open, setOpen] = useState(false);
 
   const navItems = [
-    { path: '/', label: 'Ponude', icon: List },
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/ponude', label: 'Ponude', icon: FileText },
     { path: '/nova-ponuda', label: 'Nova ponuda', icon: Plus },
     { path: '/profil', label: 'Profil', icon: User },
   ];
