@@ -31,7 +31,6 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/ponude', label: 'Ponude', icon: FileText },
     { path: '/nova-ponuda', label: 'Nova ponuda', icon: Plus },
-    { path: '/profil', label: 'Profil', icon: User },
   ];
 
   const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (

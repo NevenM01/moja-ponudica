@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Key } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface CompanyProfile {
   id?: string;
@@ -27,6 +28,9 @@ const Profile = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<CompanyProfile>({
     naziv_firme: '',
@@ -164,6 +168,34 @@ const Profile = () => {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword.length < 6) {
+      toast({ title: 'Greška', description: 'Lozinka mora imati najmanje 6 znakova', variant: 'destructive' });
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast({ title: 'Greška', description: 'Lozinke se ne podudaraju', variant: 'destructive' });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      
+      toast({ title: 'Lozinka uspješno promijenjena!' });
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto">
@@ -275,6 +307,46 @@ const Profile = () => {
               </div>
               <Button type="submit" disabled={loading}>
                 {loading ? 'Spremanje...' : 'Spremi profil'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5" />
+              Promjena lozinke
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new_password">Nova lozinka</Label>
+                  <Input
+                    id="new_password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Minimalno 6 znakova"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm_password">Potvrdi lozinku</Label>
+                  <Input
+                    id="confirm_password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Ponovi lozinku"
+                    required
+                  />
+                </div>
+              </div>
+              <Button type="submit" variant="outline" disabled={passwordLoading}>
+                {passwordLoading ? 'Spremanje...' : 'Promijeni lozinku'}
               </Button>
             </form>
           </CardContent>
