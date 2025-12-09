@@ -3,8 +3,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon } from 'lucide-react';
+import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon, Settings, ChevronDown } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -60,13 +67,32 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-2">
             <NavLinks />
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Odjava
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4 mr-2" />
+                  Moj račun
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={toggleTheme}>
+                  {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
+                  {theme === 'dark' ? 'Svijetla tema' : 'Tamna tema'}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/profil" className="flex items-center">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Postavke
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Odjava
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Mobile navigation */}
