@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { FileText, User, Plus, List, Menu, LogOut, LayoutDashboard } from 'lucide-react';
+import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface AppLayoutProps {
@@ -13,6 +14,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const { signOut } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   const navItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -54,6 +60,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-2">
             <NavLinks />
+            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Odjava
@@ -70,7 +79,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             <SheetContent side="right" className="w-64">
               <div className="flex flex-col gap-4 mt-8">
                 <NavLinks mobile />
-                <Button variant="outline" onClick={() => { signOut(); setOpen(false); }} className="w-full mt-4">
+                <Button variant="outline" onClick={toggleTheme} className="w-full mt-4">
+                  {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
+                  {theme === 'dark' ? 'Svijetla tema' : 'Tamna tema'}
+                </Button>
+                <Button variant="outline" onClick={() => { signOut(); setOpen(false); }} className="w-full">
                   <LogOut className="h-4 w-4 mr-2" />
                   Odjava
                 </Button>
