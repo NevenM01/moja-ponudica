@@ -101,13 +101,21 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64">
+              <SheetContent side="right" className="w-64">
               <div className="flex flex-col gap-4 mt-8">
                 <NavLinks mobile />
                 <Button variant="outline" onClick={toggleTheme} className="w-full mt-4">
                   {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
                   {theme === 'dark' ? 'Svijetla tema' : 'Tamna tema'}
                 </Button>
+                <Link
+                  to="/profil"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  <Settings className="h-4 w-4" />
+                  Postavke
+                </Link>
                 <Button variant="outline" onClick={() => { signOut(); setOpen(false); }} className="w-full">
                   <LogOut className="h-4 w-4 mr-2" />
                   Odjava
