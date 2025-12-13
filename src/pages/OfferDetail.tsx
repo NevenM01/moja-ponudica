@@ -29,6 +29,7 @@ interface OfferItem {
   kolicina: number;
   cijena: number;
   ukupno: number;
+  is_optional: boolean;
 }
 
 interface CompanyProfile {
@@ -229,8 +230,15 @@ const OfferDetail = () => {
               </TableHeader>
               <TableBody>
                 {items.map((item) => (
-                  <TableRow key={item.id} className="border-b border-border">
-                    <TableCell className="text-foreground">{item.opis}</TableCell>
+                  <TableRow key={item.id} className={`border-b border-border ${item.is_optional ? 'bg-muted/30' : ''}`}>
+                    <TableCell className="text-foreground">
+                      {item.opis}
+                      {item.is_optional && (
+                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                          opcijski
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-center text-foreground">{Number(item.kolicina)}</TableCell>
                     <TableCell className="text-right text-foreground">{formatNumber(Number(item.cijena))}</TableCell>
                     <TableCell className="text-right font-medium text-foreground">{formatNumber(Number(item.ukupno))}</TableCell>
@@ -248,9 +256,10 @@ const OfferDetail = () => {
               <span className="text-right">Ukupno</span>
             </div>
             {items.map((item) => (
-              <div key={item.id} className="grid grid-cols-4 gap-2 py-2 border-b border-border text-sm">
+              <div key={item.id} className={`grid grid-cols-4 gap-2 py-2 border-b border-border text-sm ${item.is_optional ? 'bg-muted/30 rounded px-2' : ''}`}>
                 <span className="col-span-2">
                   {item.opis}
+                  {item.is_optional && <span className="text-xs text-muted-foreground block">(opcijski)</span>}
                   <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)}</span>
                 </span>
                 <span className="text-right">{formatNumber(Number(item.cijena))}</span>

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CheckCircle, XCircle, Loader2, FileText, Building2, User, Calendar, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,6 +27,7 @@ interface OfferItem {
   kolicina: number;
   cijena: number;
   ukupno: number;
+  is_optional: boolean;
 }
 
 interface CompanyProfile {
@@ -46,6 +48,7 @@ const OfferPreview = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOptionalItems, setSelectedOptionalItems] = useState<Set<string>>(new Set());
 
   const fetchOffer = async (action?: 'accept' | 'reject') => {
     if (!token) return;
@@ -93,6 +96,25 @@ const OfferPreview = () => {
       year: 'numeric'
     });
   };
+
+  const toggleOptionalItem = (itemId: string) => {
+    const newSelected = new Set(selectedOptionalItems);
+    if (newSelected.has(itemId)) {
+      newSelected.delete(itemId);
+    } else {
+      newSelected.add(itemId);
+    }
+    setSelectedOptionalItems(newSelected);
+  };
+
+  // Calculate total: non-optional items + selected optional items
+  const calculatedTotal = items.reduce((sum, item) => {
+    if (!item.is_optional) return sum + item.ukupno;
+    if (selectedOptionalItems.has(item.id)) return sum + item.ukupno;
+    return sum;
+  }, 0);
+
+  const hasOptionalItems = items.some(item => item.is_optional);
 
   if (loading) {
     return (
@@ -197,13 +219,19 @@ const OfferPreview = () => {
 
             {/* Items Table */}
             <div className="mb-8">
-              <h3 className="font-medium mb-4">Stavke ponude</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-medium">Stavke ponude</h3>
+                {hasOptionalItems && isPending && (
+                  <span className="text-xs text-muted-foreground">Označite opcijske stavke koje želite</span>
+                )}
+              </div>
               
               {/* Desktop Table */}
               <div className="hidden sm:block border rounded-lg overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
+                      {hasOptionalItems && <th className="w-12 p-3"></th>}
                       <th className="text-left p-3 text-sm font-medium">Opis</th>
                       <th className="text-center p-3 text-sm font-medium w-24">Količina</th>
                       <th className="text-right p-3 text-sm font-medium w-32">Cijena</th>
@@ -211,39 +239,84 @@ const OfferPreview = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((item, index) => (
-                      <tr key={item.id} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
-                        <td className="p-3">{item.opis}</td>
-                        <td className="p-3 text-center">{item.kolicina}</td>
-                        <td className="p-3 text-right">{formatNumber(item.cijena)} €</td>
-                        <td className="p-3 text-right font-medium">{formatNumber(item.ukupno)} €</td>
-                      </tr>
-                    ))}
+                    {items.map((item, index) => {
+                      const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
+                      return (
+                        <tr 
+                          key={item.id} 
+                          className={`${index % 2 === 0 ? 'bg-background' : 'bg-muted/20'} ${item.is_optional && !isSelected ? 'opacity-50' : ''}`}
+                        >
+                          {hasOptionalItems && (
+                            <td className="p-3 text-center">
+                              {item.is_optional ? (
+                                <Checkbox
+                                  checked={selectedOptionalItems.has(item.id)}
+                                  onCheckedChange={() => isPending && toggleOptionalItem(item.id)}
+                                  disabled={!isPending}
+                                />
+                              ) : null}
+                            </td>
+                          )}
+                          <td className="p-3">
+                            {item.opis}
+                            {item.is_optional && (
+                              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                opcijski
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3 text-center">{item.kolicina}</td>
+                          <td className="p-3 text-right">{formatNumber(item.cijena)} €</td>
+                          <td className="p-3 text-right font-medium">{formatNumber(item.ukupno)} €</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Cards */}
               <div className="sm:hidden space-y-3">
-                {items.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-4">
-                    <p className="font-medium mb-2">{item.opis}</p>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Količina:</span>
-                        <p className="font-medium">{item.kolicina}</p>
+                {items.map((item) => {
+                  const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
+                  return (
+                    <div 
+                      key={item.id} 
+                      className={`border rounded-lg p-4 ${item.is_optional && !isSelected ? 'opacity-50' : ''}`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          {item.is_optional && isPending && (
+                            <Checkbox
+                              checked={selectedOptionalItems.has(item.id)}
+                              onCheckedChange={() => toggleOptionalItem(item.id)}
+                            />
+                          )}
+                          <p className="font-medium">{item.opis}</p>
+                        </div>
+                        {item.is_optional && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
+                            opcijski
+                          </span>
+                        )}
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Cijena:</span>
-                        <p className="font-medium">{formatNumber(item.cijena)} €</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Ukupno:</span>
-                        <p className="font-medium">{formatNumber(item.ukupno)} €</p>
+                      <div className="grid grid-cols-3 gap-2 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Količina:</span>
+                          <p className="font-medium">{item.kolicina}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Cijena:</span>
+                          <p className="font-medium">{formatNumber(item.cijena)} €</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Ukupno:</span>
+                          <p className="font-medium">{formatNumber(item.ukupno)} €</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -253,7 +326,7 @@ const OfferPreview = () => {
             <div className="flex justify-end">
               <div className="bg-primary/5 rounded-lg p-4 sm:p-6 text-right">
                 <p className="text-sm text-muted-foreground mb-1">Ukupno za platiti</p>
-                <p className="text-3xl font-bold text-primary">{formatNumber(offer.ukupno)} €</p>
+                <p className="text-3xl font-bold text-primary">{formatNumber(calculatedTotal)} €</p>
               </div>
             </div>
 
