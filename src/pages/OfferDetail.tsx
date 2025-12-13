@@ -4,11 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Download, Pencil } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Download, Pencil, Link2, Check } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { format } from 'date-fns';
 import { generatePDF } from '@/lib/pdfGenerator';
+import { toast } from 'sonner';
 
 interface Offer {
   id: string;
@@ -19,6 +19,8 @@ interface Offer {
   napomena: string;
   ukupno: number;
   created_at: string;
+  share_token: string;
+  status: string | null;
 }
 
 interface OfferItem {
@@ -42,11 +44,11 @@ interface CompanyProfile {
 const OfferDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [offer, setOffer] = useState<Offer | null>(null);
   const [items, setItems] = useState<OfferItem[]>([]);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     if (user && id) {
@@ -62,7 +64,7 @@ const OfferDetail = () => {
     ]);
 
     if (offerResult.error) {
-      toast({ title: 'Greška', description: offerResult.error.message, variant: 'destructive' });
+      toast.error(offerResult.error.message);
     } else {
       setOffer(offerResult.data);
     }
@@ -76,6 +78,32 @@ const OfferDetail = () => {
     if (offer && companyProfile) {
       generatePDF(offer, items, companyProfile);
     }
+  };
+
+  const handleCopyLink = async () => {
+    if (!offer?.share_token) return;
+    const url = `${window.location.origin}/p/${offer.share_token}`;
+    await navigator.clipboard.writeText(url);
+    setLinkCopied(true);
+    toast.success('Link kopiran u međuspremnik');
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
+  const getStatusBadge = () => {
+    if (!offer?.status || offer.status === 'pending') return null;
+    if (offer.status === 'accepted') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-700 dark:text-green-400">
+          <Check className="h-3 w-3" />
+          Prihvaćeno
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-700 dark:text-red-400">
+        Odbijeno
+      </span>
+    );
   };
 
   const formatNumber = (num: number) => {
@@ -109,7 +137,12 @@ const OfferDetail = () => {
               Natrag
             </Button>
           </Link>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto flex-wrap">
+            {getStatusBadge()}
+            <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none">
+              {linkCopied ? <Check className="h-4 w-4 mr-1 sm:mr-2" /> : <Link2 className="h-4 w-4 mr-1 sm:mr-2" />}
+              {linkCopied ? 'Kopirano' : 'Link'}
+            </Button>
             <Link to={`/ponuda/${id}/uredi`} className="flex-1 sm:flex-none">
               <Button variant="outline" size="sm" className="w-full">
                 <Pencil className="h-4 w-4 mr-1 sm:mr-2" />

@@ -12,6 +12,7 @@ import OfferList from "./pages/OfferList";
 import NewOffer from "./pages/NewOffer";
 import OfferDetail from "./pages/OfferDetail";
 import EditOffer from "./pages/EditOffer";
+import OfferPreview from "./pages/OfferPreview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const AppRoutes = () => {
       <Route path="/nova-ponuda" element={<ProtectedRoute><NewOffer /></ProtectedRoute>} />
       <Route path="/ponuda/:id" element={<ProtectedRoute><OfferDetail /></ProtectedRoute>} />
       <Route path="/ponuda/:id/uredi" element={<ProtectedRoute><EditOffer /></ProtectedRoute>} />
+      <Route path="/p/:token" element={<OfferPreview />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
