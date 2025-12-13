@@ -171,7 +171,7 @@ const OfferPreview = () => {
               <div className="text-left sm:text-right">
                 <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg">
                   <FileText className="h-4 w-4" />
-                  <span className="font-semibold">Ponuda {offer.offer_number}</span>
+                  <span className="font-semibold">Ponuda #{offer.offer_number.split('-').pop()}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground sm:justify-end">
                   <Calendar className="h-4 w-4" />
