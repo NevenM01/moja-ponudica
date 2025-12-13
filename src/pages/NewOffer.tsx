@@ -160,7 +160,7 @@ const NewOffer = () => {
 
         <Card>
           <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-base md:text-lg">Nova ponuda #{offerNumber.split('-').pop()}</CardTitle>
+            <CardTitle className="text-base md:text-lg">Nova ponuda - {offerNumber}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 pt-0 md:pt-0">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
