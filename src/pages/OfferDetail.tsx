@@ -213,7 +213,7 @@ const OfferDetail = () => {
           {/* Offer title */}
           <div className="text-center py-4">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Ponuda #{offer.offer_number.split('-').pop()}
+              Ponuda {offer.offer_number}
             </h1>
           </div>
 
