@@ -68,6 +68,14 @@ const EditOffer = () => {
     }
 
     const offer = offerResult.data;
+
+    // Block editing if offer is accepted
+    if (offer.status === 'accepted') {
+      toast({ title: 'Nije moguće uređivati', description: 'Prihvaćene ponude se ne mogu uređivati.', variant: 'destructive' });
+      navigate(`/ponuda/${id}`);
+      return;
+    }
+
     setOfferNumber(offer.offer_number);
     setClientNaziv(offer.client_naziv);
     setClientOib(offer.client_oib || '');

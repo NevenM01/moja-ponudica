@@ -143,12 +143,14 @@ const OfferDetail = () => {
               {linkCopied ? <Check className="h-4 w-4 mr-1 sm:mr-2" /> : <Link2 className="h-4 w-4 mr-1 sm:mr-2" />}
               {linkCopied ? 'Kopirano' : 'Link'}
             </Button>
-            <Link to={`/ponuda/${id}/uredi`} className="flex-1 sm:flex-none">
-              <Button variant="outline" size="sm" className="w-full">
-                <Pencil className="h-4 w-4 mr-1 sm:mr-2" />
-                Uredi
-              </Button>
-            </Link>
+            {offer.status !== 'accepted' && (
+              <Link to={`/ponuda/${id}/uredi`} className="flex-1 sm:flex-none">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Pencil className="h-4 w-4 mr-1 sm:mr-2" />
+                  Uredi
+                </Button>
+              </Link>
+            )}
             <Button onClick={handleDownloadPDF} size="sm" className="flex-1 sm:flex-none">
               <Download className="h-4 w-4 mr-1 sm:mr-2" />
               PDF
