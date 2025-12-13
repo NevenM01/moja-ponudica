@@ -96,6 +96,7 @@ export type Database = {
       }
       offers: {
         Row: {
+          accepted_at: string | null
           client_adresa: string | null
           client_naziv: string
           client_oib: string | null
@@ -103,11 +104,14 @@ export type Database = {
           id: string
           napomena: string | null
           offer_number: string
+          share_token: string | null
+          status: string | null
           ukupno: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          accepted_at?: string | null
           client_adresa?: string | null
           client_naziv: string
           client_oib?: string | null
@@ -115,11 +119,14 @@ export type Database = {
           id?: string
           napomena?: string | null
           offer_number: string
+          share_token?: string | null
+          status?: string | null
           ukupno?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          accepted_at?: string | null
           client_adresa?: string | null
           client_naziv?: string
           client_oib?: string | null
@@ -127,6 +134,8 @@ export type Database = {
           id?: string
           napomena?: string | null
           offer_number?: string
+          share_token?: string | null
+          status?: string | null
           ukupno?: number
           updated_at?: string
           user_id?: string

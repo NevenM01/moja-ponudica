@@ -1,1 +1,4 @@
 project_id = "nicblfsldnpprtnclijt"
+
+[functions.get-public-offer]
+verify_jwt = false
