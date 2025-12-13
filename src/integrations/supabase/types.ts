@@ -61,6 +61,7 @@ export type Database = {
           cijena: number
           created_at: string
           id: string
+          is_optional: boolean
           kolicina: number
           offer_id: string
           opis: string
@@ -70,6 +71,7 @@ export type Database = {
           cijena?: number
           created_at?: string
           id?: string
+          is_optional?: boolean
           kolicina?: number
           offer_id: string
           opis: string
@@ -79,6 +81,7 @@ export type Database = {
           cijena?: number
           created_at?: string
           id?: string
+          is_optional?: boolean
           kolicina?: number
           offer_id?: string
           opis?: string

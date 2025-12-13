@@ -19,6 +19,7 @@ interface OfferItem {
   kolicina: number;
   cijena: number;
   ukupno: number;
+  is_optional: boolean;
   isNew?: boolean;
 }
 
@@ -88,14 +89,15 @@ const EditOffer = () => {
       kolicina: Number(item.kolicina),
       cijena: Number(item.cijena),
       ukupno: Number(item.ukupno),
+      is_optional: item.is_optional || false,
     }));
 
-    setItems(existingItems.length > 0 ? existingItems : [{ id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, isNew: true }]);
+    setItems(existingItems.length > 0 ? existingItems : [{ id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
     setCompanyProfile(profileResult.data);
     setFetching(false);
   };
 
-  const updateItem = (id: string, field: keyof OfferItem, value: string | number) => {
+  const updateItem = (id: string, field: keyof OfferItem, value: string | number | boolean) => {
     setItems(
       items.map((item) => {
         if (item.id === id) {
@@ -111,7 +113,7 @@ const EditOffer = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, isNew: true }]);
+    setItems([...items, { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
   };
 
   const removeItem = (itemId: string) => {
@@ -124,7 +126,7 @@ const EditOffer = () => {
     }
   };
 
-  const total = items.reduce((sum, item) => sum + item.ukupno, 0);
+  const total = items.filter(item => !item.is_optional).reduce((sum, item) => sum + item.ukupno, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,6 +174,7 @@ const EditOffer = () => {
             kolicina: item.kolicina,
             cijena: item.cijena,
             ukupno: item.ukupno,
+            is_optional: item.is_optional,
           })
           .eq('id', item.id);
         if (error) throw error;
@@ -184,6 +187,7 @@ const EditOffer = () => {
           kolicina: item.kolicina,
           cijena: item.cijena,
           ukupno: item.ukupno,
+          is_optional: item.is_optional,
         }));
 
         const { error: insertError } = await supabase.from('offer_items').insert(itemsToInsert);

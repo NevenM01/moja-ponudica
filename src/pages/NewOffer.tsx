@@ -19,6 +19,7 @@ interface OfferItem {
   kolicina: number;
   cijena: number;
   ukupno: number;
+  is_optional: boolean;
 }
 
 interface CompanyProfile {
@@ -43,7 +44,7 @@ const NewOffer = () => {
   const [clientAdresa, setClientAdresa] = useState('');
   const [napomena, setNapomena] = useState('');
   const [items, setItems] = useState<OfferItem[]>([
-    { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0 },
+    { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false },
   ]);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ const NewOffer = () => {
     setOfferNumber(`PON-${year}-${String(nextNumber).padStart(4, '0')}`);
   };
 
-  const updateItem = (id: string, field: keyof OfferItem, value: string | number) => {
+  const updateItem = (id: string, field: keyof OfferItem, value: string | number | boolean) => {
     setItems(
       items.map((item) => {
         if (item.id === id) {
@@ -92,7 +93,7 @@ const NewOffer = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0 }]);
+    setItems([...items, { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false }]);
   };
 
   const removeItem = (id: string) => {
@@ -101,7 +102,8 @@ const NewOffer = () => {
     }
   };
 
-  const total = items.reduce((sum, item) => sum + item.ukupno, 0);
+  // Only count non-optional items in total
+  const total = items.filter(item => !item.is_optional).reduce((sum, item) => sum + item.ukupno, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +138,7 @@ const NewOffer = () => {
         kolicina: item.kolicina,
         cijena: item.cijena,
         ukupno: item.ukupno,
+        is_optional: item.is_optional,
       }));
 
       const { error: itemsError } = await supabase.from('offer_items').insert(itemsToInsert);
