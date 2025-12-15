@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
@@ -14,6 +15,9 @@ import OfferDetail from "./pages/OfferDetail";
 import EditOffer from "./pages/EditOffer";
 import OfferPreview from "./pages/OfferPreview";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminInvitations from "./pages/admin/AdminInvitations";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +30,25 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdmin();
+  
+  if (authLoading || adminLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Učitavanje...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
@@ -48,6 +71,12 @@ const AppRoutes = () => {
       <Route path="/ponuda/:id" element={<ProtectedRoute><OfferDetail /></ProtectedRoute>} />
       <Route path="/ponuda/:id/uredi" element={<ProtectedRoute><EditOffer /></ProtectedRoute>} />
       <Route path="/p/:token" element={<OfferPreview />} />
+      
+      {/* Admin routes */}
+      <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+      <Route path="/admin/korisnici" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+      <Route path="/admin/pozivnice" element={<AdminRoute><AdminInvitations /></AdminRoute>} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

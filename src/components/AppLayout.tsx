@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon, Settings, ChevronDown } from 'lucide-react';
+import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon, Settings, ChevronDown, Shield } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -19,6 +20,7 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const { signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -31,6 +33,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/ponude', label: 'Ponude', icon: FileText },
     { path: '/nova-ponuda', label: 'Nova ponuda', icon: Plus },
+    ...(isAdmin ? [{ path: '/admin', label: 'Admin', icon: Shield }] : []),
   ];
 
   const NavLinks = ({ mobile = false }: { mobile?: boolean }) => (
