@@ -19,8 +19,21 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      
+      // Auto-accept pending invitation for existing users
+      if (data.user?.email) {
+        await supabase
+          .from('invitations')
+          .update({ 
+            status: 'accepted', 
+            accepted_at: new Date().toISOString() 
+          })
+          .eq('email', data.user.email)
+          .eq('status', 'pending');
+      }
+      
       navigate('/');
     } catch (error: any) {
       toast({
