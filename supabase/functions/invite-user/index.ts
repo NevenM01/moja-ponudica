@@ -55,16 +55,26 @@ serve(async (req) => {
     // Create admin client with service role key
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user already exists and has confirmed their account
+    // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === normalizedEmail);
-    
-    if (existingUser && existingUser.email_confirmed_at) {
-      throw new Error('Korisnik s tom email adresom već postoji');
-    }
 
-    // Check if already invited (only for new invitations, not resends)
-    if (!resend) {
+    // For resend requests - delete existing user and proceed
+    if (resend) {
+      if (existingUser) {
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+        if (deleteError) {
+          console.error('Error deleting existing user for resend:', deleteError);
+          throw new Error('Greška pri ponovnom slanju pozivnice');
+        }
+      }
+    } else {
+      // For new invitations - check if user already confirmed
+      if (existingUser && existingUser.email_confirmed_at) {
+        throw new Error('Korisnik s tom email adresom već postoji');
+      }
+
+      // Check for existing pending invitation
       const { data: existingInvitation } = await supabaseAdmin
         .from('invitations')
         .select('id')
@@ -73,14 +83,6 @@ serve(async (req) => {
 
       if (existingInvitation) {
         throw new Error('Pozivnica za tu email adresu već postoji');
-      }
-    }
-
-    // For resend, we need to delete the existing user first and recreate
-    if (resend && existingUser) {
-      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
-      if (deleteError) {
-        console.error('Error deleting existing user for resend:', deleteError);
       }
     }
 
