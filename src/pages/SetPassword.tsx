@@ -72,16 +72,25 @@ const SetPassword = () => {
       // Get current user to update invitation status
       const { data: { user } } = await supabase.auth.getUser();
       
+      console.log('SetPassword - Current user:', user?.email);
+      
       if (user?.email) {
         // Update invitation status to accepted
-        await supabase
+        const { error: inviteError, data: inviteData } = await supabase
           .from('invitations')
           .update({ 
             status: 'accepted', 
             accepted_at: new Date().toISOString() 
           })
           .eq('email', user.email)
-          .eq('status', 'pending');
+          .eq('status', 'pending')
+          .select();
+        
+        console.log('SetPassword - Invitation update result:', { inviteData, inviteError });
+        
+        if (inviteError) {
+          console.error('SetPassword - Error updating invitation:', inviteError);
+        }
       }
 
       toast({
