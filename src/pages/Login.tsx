@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -20,18 +19,9 @@ const Login = () => {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        toast({
-          title: 'Uspješna registracija!',
-          description: 'Provjerite email za potvrdu.',
-        });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate('/');
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigate('/');
     } catch (error: any) {
       toast({
         title: 'Greška',
@@ -49,7 +39,7 @@ const Login = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">MojaPonudica</CardTitle>
           <CardDescription>
-            {isSignUp ? 'Kreirajte novi račun' : 'Prijavite se u svoj račun'}
+            Prijavite se u svoj račun
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,18 +67,9 @@ const Login = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Učitavanje...' : isSignUp ? 'Registriraj se' : 'Prijavi se'}
+              {loading ? 'Učitavanje...' : 'Prijavi se'}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {isSignUp ? 'Već imate račun? Prijavite se' : 'Nemate račun? Registrirajte se'}
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>
