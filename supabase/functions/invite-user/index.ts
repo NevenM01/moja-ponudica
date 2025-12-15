@@ -44,8 +44,8 @@ serve(async (req) => {
       throw new Error('Samo administratori mogu slati pozivnice');
     }
 
-    // Get the email from the request body
-    const { email } = await req.json();
+    // Get the email and resend flag from the request body
+    const { email, resend } = await req.json();
     if (!email || !email.trim()) {
       throw new Error('Email adresa je obavezna');
     }
@@ -55,23 +55,33 @@ serve(async (req) => {
     // Create admin client with service role key
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if user already exists
+    // Check if user already exists and has confirmed their account
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.some(u => u.email?.toLowerCase() === normalizedEmail);
+    const existingUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === normalizedEmail);
     
-    if (userExists) {
+    if (existingUser && existingUser.email_confirmed_at) {
       throw new Error('Korisnik s tom email adresom već postoji');
     }
 
-    // Check if already invited
-    const { data: existingInvitation } = await supabaseAdmin
-      .from('invitations')
-      .select('id')
-      .eq('email', normalizedEmail)
-      .single();
+    // Check if already invited (only for new invitations, not resends)
+    if (!resend) {
+      const { data: existingInvitation } = await supabaseAdmin
+        .from('invitations')
+        .select('id')
+        .eq('email', normalizedEmail)
+        .maybeSingle();
 
-    if (existingInvitation) {
-      throw new Error('Pozivnica za tu email adresu već postoji');
+      if (existingInvitation) {
+        throw new Error('Pozivnica za tu email adresu već postoji');
+      }
+    }
+
+    // For resend, we need to delete the existing user first and recreate
+    if (resend && existingUser) {
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+      if (deleteError) {
+        console.error('Error deleting existing user for resend:', deleteError);
+      }
     }
 
     // Send the invitation using Supabase's built-in invite
@@ -82,20 +92,21 @@ serve(async (req) => {
       throw new Error('Greška pri slanju pozivnice: ' + inviteError.message);
     }
 
-    console.log('Invitation sent successfully to:', normalizedEmail);
+    console.log('Invitation sent successfully to:', normalizedEmail, resend ? '(resend)' : '');
 
-    // Save the invitation to our invitations table
-    const { error: insertError } = await supabaseAdmin
-      .from('invitations')
-      .insert({
-        email: normalizedEmail,
-        invited_by: user.id,
-        status: 'pending'
-      });
+    // Save the invitation to our invitations table (only for new invitations)
+    if (!resend) {
+      const { error: insertError } = await supabaseAdmin
+        .from('invitations')
+        .insert({
+          email: normalizedEmail,
+          invited_by: user.id,
+          status: 'pending'
+        });
 
-    if (insertError) {
-      console.error('Error saving invitation:', insertError);
-      // Don't throw here - the invite was sent successfully
+      if (insertError) {
+        console.error('Error saving invitation:', insertError);
+      }
     }
 
     return new Response(

@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowLeft, Mail, Send } from 'lucide-react';
+import { ArrowLeft, Mail, Send, RotateCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -33,6 +33,7 @@ const AdminInvitations = () => {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const fetchInvitations = async () => {
     const { data, error } = await supabase
@@ -86,6 +87,31 @@ const AdminInvitations = () => {
     }
 
     setSending(false);
+  };
+
+  const handleResendInvitation = async (invitation: Invitation) => {
+    setResendingId(invitation.id);
+
+    try {
+      const response = await supabase.functions.invoke('invite-user', {
+        body: { email: invitation.email, resend: true }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Greška pri ponovnom slanju');
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast.success('Pozivnica ponovno poslana!');
+    } catch (error: any) {
+      console.error('Error resending invitation:', error);
+      toast.error(error.message || 'Greška pri ponovnom slanju');
+    }
+
+    setResendingId(null);
   };
 
   const formatDate = (dateString: string | null) => {
@@ -167,6 +193,7 @@ const AdminInvitations = () => {
                         <TableHead>Status</TableHead>
                         <TableHead>Poslano</TableHead>
                         <TableHead>Prihvaćeno</TableHead>
+                        <TableHead className="w-[100px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -176,6 +203,18 @@ const AdminInvitations = () => {
                           <TableCell>{getStatusBadge(invitation.status)}</TableCell>
                           <TableCell>{formatDate(invitation.created_at)}</TableCell>
                           <TableCell>{formatDate(invitation.accepted_at)}</TableCell>
+                          <TableCell>
+                            {invitation.status === 'pending' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResendInvitation(invitation)}
+                                disabled={resendingId === invitation.id}
+                              >
+                                <RotateCw className={`h-4 w-4 ${resendingId === invitation.id ? 'animate-spin' : ''}`} />
+                              </Button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -190,7 +229,19 @@ const AdminInvitations = () => {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{invitation.email}</span>
-                            {getStatusBadge(invitation.status)}
+                            <div className="flex items-center gap-2">
+                              {getStatusBadge(invitation.status)}
+                              {invitation.status === 'pending' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleResendInvitation(invitation)}
+                                  disabled={resendingId === invitation.id}
+                                >
+                                  <RotateCw className={`h-4 w-4 ${resendingId === invitation.id ? 'animate-spin' : ''}`} />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           <div className="text-sm text-muted-foreground">
                             Poslano: {formatDate(invitation.created_at)}
