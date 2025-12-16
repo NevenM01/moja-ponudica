@@ -11,18 +11,7 @@ import { Save, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import CompanyInfoBox from '@/components/CompanyInfoBox';
-import OfferItemsEditor from '@/components/OfferItemsEditor';
-
-interface OfferItem {
-  id: string;
-  opis: string;
-  jedinica: string;
-  kolicina: number;
-  cijena: number;
-  ukupno: number;
-  is_optional: boolean;
-  isNew?: boolean;
-}
+import OfferItemsEditor, { OfferGroup, OfferItem } from '@/components/OfferItemsEditor';
 
 interface CompanyProfile {
   naziv_firme: string;
@@ -32,6 +21,27 @@ interface CompanyProfile {
   email: string;
   telefon: string;
 }
+
+const createNewItem = (groupId: string): OfferItem => ({
+  id: crypto.randomUUID(),
+  opis: '',
+  jedinica: 'kom',
+  kolicina: 1,
+  cijena: 0,
+  ukupno: 0,
+  is_optional: false,
+  group_id: groupId,
+});
+
+const createNewGroup = (redni_broj: number): OfferGroup => {
+  const groupId = crypto.randomUUID();
+  return {
+    id: groupId,
+    naziv: '',
+    redni_broj,
+    items: [createNewItem(groupId)],
+  };
+};
 
 const EditOffer = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,8 +57,11 @@ const EditOffer = () => {
   const [clientOib, setClientOib] = useState('');
   const [clientAdresa, setClientAdresa] = useState('');
   const [napomena, setNapomena] = useState('');
-  const [items, setItems] = useState<OfferItem[]>([]);
+  const [groups, setGroups] = useState<OfferGroup[]>([]);
+  const [deletedGroupIds, setDeletedGroupIds] = useState<string[]>([]);
   const [deletedItemIds, setDeletedItemIds] = useState<string[]>([]);
+  const [originalGroupIds, setOriginalGroupIds] = useState<Set<string>>(new Set());
+  const [originalItemIds, setOriginalItemIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user && id) {
@@ -57,8 +70,9 @@ const EditOffer = () => {
   }, [user, id]);
 
   const fetchData = async () => {
-    const [offerResult, itemsResult, profileResult] = await Promise.all([
+    const [offerResult, groupsResult, itemsResult, profileResult] = await Promise.all([
       supabase.from('offers').select('*').eq('id', id).single(),
+      supabase.from('offer_item_groups').select('*').eq('offer_id', id).order('redni_broj'),
       supabase.from('offer_items').select('*').eq('offer_id', id),
       supabase.from('company_profiles').select('naziv_firme, oib, adresa, iban, email, telefon').eq('user_id', user?.id).maybeSingle(),
     ]);
@@ -84,51 +98,140 @@ const EditOffer = () => {
     setClientAdresa(offer.client_adresa || '');
     setNapomena(offer.napomena || '');
 
-    const existingItems = (itemsResult.data || []).map((item) => ({
-      id: item.id,
-      opis: item.opis,
-      jedinica: item.jedinica || 'kom',
-      kolicina: Number(item.kolicina),
-      cijena: Number(item.cijena),
-      ukupno: Number(item.ukupno),
-      is_optional: item.is_optional || false,
-    }));
+    const existingGroups = groupsResult.data || [];
+    const existingItems = itemsResult.data || [];
 
-    setItems(existingItems.length > 0 ? existingItems : [{ id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
+    // Store original IDs
+    setOriginalGroupIds(new Set(existingGroups.map(g => g.id)));
+    setOriginalItemIds(new Set(existingItems.map(i => i.id)));
+
+    if (existingGroups.length > 0) {
+      // Map items to groups
+      const groupedData: OfferGroup[] = existingGroups.map(group => ({
+        id: group.id,
+        naziv: group.naziv,
+        redni_broj: group.redni_broj,
+        items: existingItems
+          .filter(item => item.group_id === group.id)
+          .map(item => ({
+            id: item.id,
+            opis: item.opis,
+            jedinica: item.jedinica || 'kom',
+            kolicina: Number(item.kolicina),
+            cijena: Number(item.cijena),
+            ukupno: Number(item.ukupno),
+            is_optional: item.is_optional || false,
+            group_id: item.group_id,
+          })),
+      }));
+
+      // Ensure each group has at least one item
+      groupedData.forEach(group => {
+        if (group.items.length === 0) {
+          group.items = [createNewItem(group.id)];
+        }
+      });
+
+      setGroups(groupedData);
+    } else if (existingItems.length > 0) {
+      // Legacy: items without groups - create a default group
+      const defaultGroupId = crypto.randomUUID();
+      const legacyGroup: OfferGroup = {
+        id: defaultGroupId,
+        naziv: 'Stavke',
+        redni_broj: 1,
+        items: existingItems.map(item => ({
+          id: item.id,
+          opis: item.opis,
+          jedinica: item.jedinica || 'kom',
+          kolicina: Number(item.kolicina),
+          cijena: Number(item.cijena),
+          ukupno: Number(item.ukupno),
+          is_optional: item.is_optional || false,
+          group_id: defaultGroupId,
+        })),
+      };
+      setGroups([legacyGroup]);
+    } else {
+      setGroups([createNewGroup(1)]);
+    }
+
     setCompanyProfile(profileResult.data);
     setFetching(false);
   };
 
-  const updateItem = (id: string, field: keyof OfferItem, value: string | number | boolean) => {
-    setItems(
-      items.map((item) => {
-        if (item.id === id) {
+  const updateGroup = (groupId: string, naziv: string) => {
+    setGroups(groups.map(g => g.id === groupId ? { ...g, naziv } : g));
+  };
+
+  const addGroup = () => {
+    const newGroup = createNewGroup(groups.length + 1);
+    setGroups([...groups, newGroup]);
+  };
+
+  const removeGroup = (groupId: string) => {
+    const group = groups.find(g => g.id === groupId);
+    if (group && originalGroupIds.has(groupId)) {
+      setDeletedGroupIds([...deletedGroupIds, groupId]);
+      // Also mark all items in this group as deleted
+      group.items.forEach(item => {
+        if (originalItemIds.has(item.id)) {
+          setDeletedItemIds(prev => [...prev, item.id]);
+        }
+      });
+    }
+    if (groups.length > 1) {
+      const filtered = groups.filter(g => g.id !== groupId);
+      setGroups(filtered.map((g, idx) => ({ ...g, redni_broj: idx + 1 })));
+    }
+  };
+
+  const updateItem = (groupId: string, itemId: string, field: keyof OfferItem, value: string | number | boolean) => {
+    setGroups(groups.map(group => {
+      if (group.id !== groupId) return group;
+      return {
+        ...group,
+        items: group.items.map(item => {
+          if (item.id !== itemId) return item;
           const updated = { ...item, [field]: value };
           if (field === 'kolicina' || field === 'cijena') {
             updated.ukupno = updated.kolicina * updated.cijena;
           }
           return updated;
-        }
-        return item;
-      })
-    );
+        }),
+      };
+    }));
   };
 
-  const addItem = () => {
-    setItems([...items, { id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
+  const addItem = (groupId: string) => {
+    setGroups(groups.map(group => {
+      if (group.id !== groupId) return group;
+      return {
+        ...group,
+        items: [...group.items, createNewItem(groupId)],
+      };
+    }));
   };
 
-  const removeItem = (itemId: string) => {
-    const item = items.find((i) => i.id === itemId);
-    if (item && !item.isNew) {
+  const removeItem = (groupId: string, itemId: string) => {
+    if (originalItemIds.has(itemId)) {
       setDeletedItemIds([...deletedItemIds, itemId]);
     }
-    if (items.length > 1) {
-      setItems(items.filter((i) => i.id !== itemId));
-    }
+    setGroups(groups.map(group => {
+      if (group.id !== groupId) return group;
+      if (group.items.length <= 1) return group;
+      return {
+        ...group,
+        items: group.items.filter(item => item.id !== itemId),
+      };
+    }));
   };
 
-  const total = items.filter(item => !item.is_optional).reduce((sum, item) => sum + item.ukupno, 0);
+  const total = groups.reduce((sum, group) => {
+    return sum + group.items
+      .filter(item => !item.is_optional)
+      .reduce((itemSum, item) => itemSum + item.ukupno, 0);
+  }, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,47 +258,80 @@ const EditOffer = () => {
 
       if (offerError) throw offerError;
 
-      // Delete removed items
+      // Delete removed items first
       if (deletedItemIds.length > 0) {
-        const { error: deleteError } = await supabase
+        const { error: deleteItemsError } = await supabase
           .from('offer_items')
           .delete()
           .in('id', deletedItemIds);
-        if (deleteError) throw deleteError;
+        if (deleteItemsError) throw deleteItemsError;
       }
 
-      // Update existing items and insert new ones
-      const existingItems = items.filter((item) => !item.isNew);
-      const newItems = items.filter((item) => item.isNew);
-
-      for (const item of existingItems) {
-        const { error } = await supabase
-          .from('offer_items')
-          .update({
-            opis: item.opis,
-            jedinica: item.jedinica,
-            kolicina: item.kolicina,
-            cijena: item.cijena,
-            ukupno: item.ukupno,
-            is_optional: item.is_optional,
-          })
-          .eq('id', item.id);
-        if (error) throw error;
+      // Delete removed groups
+      if (deletedGroupIds.length > 0) {
+        const { error: deleteGroupsError } = await supabase
+          .from('offer_item_groups')
+          .delete()
+          .in('id', deletedGroupIds);
+        if (deleteGroupsError) throw deleteGroupsError;
       }
 
-      if (newItems.length > 0) {
-        const itemsToInsert = newItems.map((item) => ({
-          offer_id: id,
-          opis: item.opis,
-          jedinica: item.jedinica,
-          kolicina: item.kolicina,
-          cijena: item.cijena,
-          ukupno: item.ukupno,
-          is_optional: item.is_optional,
-        }));
+      // Process each group
+      for (const group of groups) {
+        let savedGroupId = group.id;
 
-        const { error: insertError } = await supabase.from('offer_items').insert(itemsToInsert);
-        if (insertError) throw insertError;
+        if (originalGroupIds.has(group.id)) {
+          // Update existing group
+          const { error: updateGroupError } = await supabase
+            .from('offer_item_groups')
+            .update({ naziv: group.naziv, redni_broj: group.redni_broj })
+            .eq('id', group.id);
+          if (updateGroupError) throw updateGroupError;
+        } else {
+          // Insert new group
+          const { data: savedGroup, error: insertGroupError } = await supabase
+            .from('offer_item_groups')
+            .insert({ offer_id: id, naziv: group.naziv, redni_broj: group.redni_broj })
+            .select()
+            .single();
+          if (insertGroupError) throw insertGroupError;
+          savedGroupId = savedGroup.id;
+        }
+
+        // Process items
+        for (const item of group.items) {
+          if (originalItemIds.has(item.id)) {
+            // Update existing item
+            const { error: updateItemError } = await supabase
+              .from('offer_items')
+              .update({
+                group_id: savedGroupId,
+                opis: item.opis,
+                jedinica: item.jedinica,
+                kolicina: item.kolicina,
+                cijena: item.cijena,
+                ukupno: item.ukupno,
+                is_optional: item.is_optional,
+              })
+              .eq('id', item.id);
+            if (updateItemError) throw updateItemError;
+          } else {
+            // Insert new item
+            const { error: insertItemError } = await supabase
+              .from('offer_items')
+              .insert({
+                offer_id: id,
+                group_id: savedGroupId,
+                opis: item.opis,
+                jedinica: item.jedinica,
+                kolicina: item.kolicina,
+                cijena: item.cijena,
+                ukupno: item.ukupno,
+                is_optional: item.is_optional,
+              });
+            if (insertItemError) throw insertItemError;
+          }
+        }
       }
 
       toast({ title: 'Ponuda ažurirana!' });
@@ -263,7 +399,10 @@ const EditOffer = () => {
             </div>
 
             <OfferItemsEditor
-              items={items}
+              groups={groups}
+              onUpdateGroup={updateGroup}
+              onAddGroup={addGroup}
+              onRemoveGroup={removeGroup}
               onUpdateItem={updateItem}
               onAddItem={addItem}
               onRemoveItem={removeItem}

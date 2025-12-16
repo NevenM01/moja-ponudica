@@ -31,6 +31,13 @@ interface OfferItem {
   cijena: number;
   ukupno: number;
   is_optional: boolean;
+  group_id: string | null;
+}
+
+interface OfferGroup {
+  id: string;
+  naziv: string;
+  redni_broj: number;
 }
 
 interface CompanyProfile {
@@ -48,6 +55,7 @@ const OfferDetail = () => {
   const { user } = useAuth();
   const [offer, setOffer] = useState<Offer | null>(null);
   const [items, setItems] = useState<OfferItem[]>([]);
+  const [groups, setGroups] = useState<OfferGroup[]>([]);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -59,9 +67,10 @@ const OfferDetail = () => {
   }, [user, id]);
 
   const fetchData = async () => {
-    const [offerResult, itemsResult, profileResult] = await Promise.all([
+    const [offerResult, itemsResult, groupsResult, profileResult] = await Promise.all([
       supabase.from('offers').select('*').eq('id', id).single(),
       supabase.from('offer_items').select('*').eq('offer_id', id),
+      supabase.from('offer_item_groups').select('*').eq('offer_id', id).order('redni_broj'),
       supabase.from('company_profiles').select('*').eq('user_id', user?.id).maybeSingle(),
     ]);
 
@@ -72,13 +81,14 @@ const OfferDetail = () => {
     }
 
     setItems(itemsResult.data || []);
+    setGroups(groupsResult.data || []);
     setCompanyProfile(profileResult.data);
     setLoading(false);
   };
 
   const handleDownloadPDF = () => {
     if (offer && companyProfile) {
-      generatePDF(offer, items, companyProfile);
+      generatePDF(offer, items, companyProfile, groups);
     }
   };
 
@@ -110,6 +120,108 @@ const OfferDetail = () => {
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const renderGroupedItems = () => {
+    if (groups.length === 0) {
+      // No groups - render flat items
+      return items.map((item, index) => (
+        <TableRow key={item.id} className={`border-b border-border ${item.is_optional ? 'bg-muted/30' : ''}`}>
+          <TableCell className="text-center text-foreground">{index + 1}.</TableCell>
+          <TableCell className="text-foreground">
+            {item.opis}
+            {item.is_optional && (
+              <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                opcijski
+              </span>
+            )}
+          </TableCell>
+          <TableCell className="text-center text-foreground">{item.jedinica || 'kom'}</TableCell>
+          <TableCell className="text-center text-foreground">{Number(item.kolicina)}</TableCell>
+          <TableCell className="text-right text-foreground">{formatNumber(Number(item.cijena))}</TableCell>
+          <TableCell className="text-right font-medium text-foreground">{formatNumber(Number(item.ukupno))}</TableCell>
+        </TableRow>
+      ));
+    }
+
+    // Grouped items
+    let itemCounter = 1;
+    return groups.map((group) => {
+      const groupItems = items.filter(item => item.group_id === group.id);
+      return (
+        <>
+          <TableRow key={`group-${group.id}`} className="bg-muted/50">
+            <TableCell colSpan={6} className="font-bold text-foreground py-3">
+              {group.redni_broj}. {group.naziv}
+            </TableCell>
+          </TableRow>
+          {groupItems.map((item) => {
+            const currentIndex = itemCounter++;
+            return (
+              <TableRow key={item.id} className={`border-b border-border ${item.is_optional ? 'bg-muted/30' : ''}`}>
+                <TableCell className="text-center text-foreground pl-6">{currentIndex}.</TableCell>
+                <TableCell className="text-foreground">
+                  {item.opis}
+                  {item.is_optional && (
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                      opcijski
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="text-center text-foreground">{item.jedinica || 'kom'}</TableCell>
+                <TableCell className="text-center text-foreground">{Number(item.kolicina)}</TableCell>
+                <TableCell className="text-right text-foreground">{formatNumber(Number(item.cijena))}</TableCell>
+                <TableCell className="text-right font-medium text-foreground">{formatNumber(Number(item.ukupno))}</TableCell>
+              </TableRow>
+            );
+          })}
+        </>
+      );
+    });
+  };
+
+  const renderMobileItems = () => {
+    if (groups.length === 0) {
+      return items.map((item, index) => (
+        <div key={item.id} className={`grid grid-cols-5 gap-1 py-2 border-b border-border text-sm px-2 ${item.is_optional ? 'bg-muted/30 rounded' : ''}`}>
+          <span className="text-center text-muted-foreground">{index + 1}.</span>
+          <span className="col-span-2">
+            {item.opis}
+            {item.is_optional && <span className="text-xs text-muted-foreground block">(opcijski)</span>}
+            <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)} {item.jedinica || 'kom'}</span>
+          </span>
+          <span className="text-right">{formatNumber(Number(item.cijena))}</span>
+          <span className="text-right font-medium">{formatNumber(Number(item.ukupno))}</span>
+        </div>
+      ));
+    }
+
+    let itemCounter = 1;
+    return groups.map((group) => {
+      const groupItems = items.filter(item => item.group_id === group.id);
+      return (
+        <div key={group.id}>
+          <div className="bg-muted/50 font-bold py-2 px-2 text-sm">
+            {group.redni_broj}. {group.naziv}
+          </div>
+          {groupItems.map((item) => {
+            const currentIndex = itemCounter++;
+            return (
+              <div key={item.id} className={`grid grid-cols-5 gap-1 py-2 border-b border-border text-sm px-2 ${item.is_optional ? 'bg-muted/30 rounded' : ''}`}>
+                <span className="text-center text-muted-foreground">{currentIndex}.</span>
+                <span className="col-span-2">
+                  {item.opis}
+                  {item.is_optional && <span className="text-xs text-muted-foreground block">(opcijski)</span>}
+                  <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)} {item.jedinica || 'kom'}</span>
+                </span>
+                <span className="text-right">{formatNumber(Number(item.cijena))}</span>
+                <span className="text-right font-medium">{formatNumber(Number(item.ukupno))}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    });
   };
 
   if (loading) {
@@ -237,47 +349,20 @@ const OfferDetail = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item, index) => (
-                  <TableRow key={item.id} className={`border-b border-border ${item.is_optional ? 'bg-muted/30' : ''}`}>
-                    <TableCell className="text-center text-foreground">{index + 1}.</TableCell>
-                    <TableCell className="text-foreground">
-                      {item.opis}
-                      {item.is_optional && (
-                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                          opcijski
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center text-foreground">{item.jedinica || 'kom'}</TableCell>
-                    <TableCell className="text-center text-foreground">{Number(item.kolicina)}</TableCell>
-                    <TableCell className="text-right text-foreground">{formatNumber(Number(item.cijena))}</TableCell>
-                    <TableCell className="text-right font-medium text-foreground">{formatNumber(Number(item.ukupno))}</TableCell>
-                  </TableRow>
-                ))}
+                {renderGroupedItems()}
               </TableBody>
             </Table>
           </div>
 
           {/* Items - Mobile */}
-          <div className="md:hidden space-y-3">
+          <div className="md:hidden space-y-1">
             <div className="grid grid-cols-5 gap-1 py-2 border-t-2 border-b-2 border-foreground/20 text-xs font-bold bg-muted/50 px-2">
               <span className="text-center">Br.</span>
               <span className="col-span-2">Naziv</span>
               <span className="text-right">Cijena</span>
               <span className="text-right">Ukupno</span>
             </div>
-            {items.map((item, index) => (
-              <div key={item.id} className={`grid grid-cols-5 gap-1 py-2 border-b border-border text-sm px-2 ${item.is_optional ? 'bg-muted/30 rounded' : ''}`}>
-                <span className="text-center text-muted-foreground">{index + 1}.</span>
-                <span className="col-span-2">
-                  {item.opis}
-                  {item.is_optional && <span className="text-xs text-muted-foreground block">(opcijski)</span>}
-                  <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)} {item.jedinica || 'kom'}</span>
-                </span>
-                <span className="text-right">{formatNumber(Number(item.cijena))}</span>
-                <span className="text-right font-medium">{formatNumber(Number(item.ukupno))}</span>
-              </div>
-            ))}
+            {renderMobileItems()}
           </div>
 
           {/* REKAPITULACIJA */}

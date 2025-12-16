@@ -11,17 +11,7 @@ import { Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import CompanyInfoBox from '@/components/CompanyInfoBox';
-import OfferItemsEditor from '@/components/OfferItemsEditor';
-
-interface OfferItem {
-  id: string;
-  opis: string;
-  jedinica: string;
-  kolicina: number;
-  cijena: number;
-  ukupno: number;
-  is_optional: boolean;
-}
+import OfferItemsEditor, { OfferGroup, OfferItem } from '@/components/OfferItemsEditor';
 
 interface CompanyProfile {
   naziv_firme: string;
@@ -31,6 +21,27 @@ interface CompanyProfile {
   email: string;
   telefon: string;
 }
+
+const createNewItem = (groupId: string): OfferItem => ({
+  id: crypto.randomUUID(),
+  opis: '',
+  jedinica: 'kom',
+  kolicina: 1,
+  cijena: 0,
+  ukupno: 0,
+  is_optional: false,
+  group_id: groupId,
+});
+
+const createNewGroup = (redni_broj: number): OfferGroup => {
+  const groupId = crypto.randomUUID();
+  return {
+    id: groupId,
+    naziv: '',
+    redni_broj,
+    items: [createNewItem(groupId)],
+  };
+};
 
 const NewOffer = () => {
   const { user } = useAuth();
@@ -44,9 +55,7 @@ const NewOffer = () => {
   const [clientOib, setClientOib] = useState('');
   const [clientAdresa, setClientAdresa] = useState('');
   const [napomena, setNapomena] = useState('');
-  const [items, setItems] = useState<OfferItem[]>([
-    { id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false },
-  ]);
+  const [groups, setGroups] = useState<OfferGroup[]>([createNewGroup(1)]);
 
   useEffect(() => {
     if (user) {
@@ -78,33 +87,67 @@ const NewOffer = () => {
     setOfferNumber(`PON-${year}-${String(nextNumber).padStart(4, '0')}`);
   };
 
-  const updateItem = (id: string, field: keyof OfferItem, value: string | number | boolean) => {
-    setItems(
-      items.map((item) => {
-        if (item.id === id) {
+  const updateGroup = (groupId: string, naziv: string) => {
+    setGroups(groups.map(g => g.id === groupId ? { ...g, naziv } : g));
+  };
+
+  const addGroup = () => {
+    const newGroup = createNewGroup(groups.length + 1);
+    setGroups([...groups, newGroup]);
+  };
+
+  const removeGroup = (groupId: string) => {
+    if (groups.length > 1) {
+      const filtered = groups.filter(g => g.id !== groupId);
+      // Renumber groups
+      setGroups(filtered.map((g, idx) => ({ ...g, redni_broj: idx + 1 })));
+    }
+  };
+
+  const updateItem = (groupId: string, itemId: string, field: keyof OfferItem, value: string | number | boolean) => {
+    setGroups(groups.map(group => {
+      if (group.id !== groupId) return group;
+      return {
+        ...group,
+        items: group.items.map(item => {
+          if (item.id !== itemId) return item;
           const updated = { ...item, [field]: value };
           if (field === 'kolicina' || field === 'cijena') {
             updated.ukupno = updated.kolicina * updated.cijena;
           }
           return updated;
-        }
-        return item;
-      })
-    );
+        }),
+      };
+    }));
   };
 
-  const addItem = () => {
-    setItems([...items, { id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false }]);
+  const addItem = (groupId: string) => {
+    setGroups(groups.map(group => {
+      if (group.id !== groupId) return group;
+      return {
+        ...group,
+        items: [...group.items, createNewItem(groupId)],
+      };
+    }));
   };
 
-  const removeItem = (id: string) => {
-    if (items.length > 1) {
-      setItems(items.filter((item) => item.id !== id));
-    }
+  const removeItem = (groupId: string, itemId: string) => {
+    setGroups(groups.map(group => {
+      if (group.id !== groupId) return group;
+      if (group.items.length <= 1) return group;
+      return {
+        ...group,
+        items: group.items.filter(item => item.id !== itemId),
+      };
+    }));
   };
 
-  // Only count non-optional items in total
-  const total = items.filter(item => !item.is_optional).reduce((sum, item) => sum + item.ukupno, 0);
+  // Calculate total (non-optional items only)
+  const total = groups.reduce((sum, group) => {
+    return sum + group.items
+      .filter(item => !item.is_optional)
+      .reduce((itemSum, item) => itemSum + item.ukupno, 0);
+  }, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,6 +160,7 @@ const NewOffer = () => {
     setLoading(true);
 
     try {
+      // Create offer
       const { data: offer, error: offerError } = await supabase
         .from('offers')
         .insert({
@@ -133,18 +177,34 @@ const NewOffer = () => {
 
       if (offerError) throw offerError;
 
-      const itemsToInsert = items.map((item) => ({
-        offer_id: offer.id,
-        opis: item.opis,
-        jedinica: item.jedinica,
-        kolicina: item.kolicina,
-        cijena: item.cijena,
-        ukupno: item.ukupno,
-        is_optional: item.is_optional,
-      }));
+      // Create groups and items
+      for (const group of groups) {
+        const { data: savedGroup, error: groupError } = await supabase
+          .from('offer_item_groups')
+          .insert({
+            offer_id: offer.id,
+            naziv: group.naziv,
+            redni_broj: group.redni_broj,
+          })
+          .select()
+          .single();
 
-      const { error: itemsError } = await supabase.from('offer_items').insert(itemsToInsert);
-      if (itemsError) throw itemsError;
+        if (groupError) throw groupError;
+
+        const itemsToInsert = group.items.map((item) => ({
+          offer_id: offer.id,
+          group_id: savedGroup.id,
+          opis: item.opis,
+          jedinica: item.jedinica,
+          kolicina: item.kolicina,
+          cijena: item.cijena,
+          ukupno: item.ukupno,
+          is_optional: item.is_optional,
+        }));
+
+        const { error: itemsError } = await supabase.from('offer_items').insert(itemsToInsert);
+        if (itemsError) throw itemsError;
+      }
 
       toast({ title: 'Ponuda spremljena!' });
       navigate(`/ponuda/${offer.id}`);
@@ -194,7 +254,10 @@ const NewOffer = () => {
             </div>
 
             <OfferItemsEditor
-              items={items}
+              groups={groups}
+              onUpdateGroup={updateGroup}
+              onAddGroup={addGroup}
+              onRemoveGroup={removeGroup}
               onUpdateItem={updateItem}
               onAddItem={addItem}
               onRemoveItem={removeItem}

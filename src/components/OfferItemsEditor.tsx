@@ -3,10 +3,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, FolderPlus } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
-interface OfferItem {
+export interface OfferItem {
   id: string;
   opis: string;
   jedinica: string;
@@ -14,13 +14,24 @@ interface OfferItem {
   cijena: number;
   ukupno: number;
   is_optional?: boolean;
+  group_id?: string;
+}
+
+export interface OfferGroup {
+  id: string;
+  naziv: string;
+  redni_broj: number;
+  items: OfferItem[];
 }
 
 interface OfferItemsEditorProps {
-  items: OfferItem[];
-  onUpdateItem: (id: string, field: keyof OfferItem, value: string | number | boolean) => void;
-  onAddItem: () => void;
-  onRemoveItem: (id: string) => void;
+  groups: OfferGroup[];
+  onUpdateGroup: (groupId: string, naziv: string) => void;
+  onAddGroup: () => void;
+  onRemoveGroup: (groupId: string) => void;
+  onUpdateItem: (groupId: string, itemId: string, field: keyof OfferItem, value: string | number | boolean) => void;
+  onAddItem: (groupId: string) => void;
+  onRemoveItem: (groupId: string, itemId: string) => void;
   total: number;
 }
 
@@ -36,192 +47,227 @@ const UNIT_OPTIONS = [
 ];
 
 const OfferItemsEditor = ({
-  items,
+  groups,
+  onUpdateGroup,
+  onAddGroup,
+  onRemoveGroup,
   onUpdateItem,
   onAddItem,
   onRemoveItem,
   total,
 }: OfferItemsEditorProps) => {
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <Label>Stavke ponude</Label>
-        <Button type="button" variant="outline" size="sm" onClick={onAddItem}>
-          <Plus className="h-4 w-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Dodaj stavku</span>
-          <span className="sm:hidden">Dodaj</span>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label className="text-base font-semibold">Stavke ponude</Label>
+        <Button type="button" variant="outline" size="sm" onClick={onAddGroup}>
+          <FolderPlus className="h-4 w-4 mr-2" />
+          Dodaj grupu
         </Button>
       </div>
 
-      {/* Desktop table */}
-      <div className="hidden md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[30%]">Naziv</TableHead>
-              <TableHead className="w-20">Jed</TableHead>
-              <TableHead className="w-20">Kol</TableHead>
-              <TableHead className="w-24">Jed cijena</TableHead>
-              <TableHead className="w-24">Ukupno</TableHead>
-              <TableHead className="w-20 text-center">Opcijski</TableHead>
-              <TableHead className="w-12"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <Input
-                    value={item.opis}
-                    onChange={(e) => onUpdateItem(item.id, 'opis', e.target.value)}
-                    placeholder="Naziv stavke"
-                    required
-                  />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={item.jedinica}
-                    onValueChange={(value) => onUpdateItem(item.id, 'jedinica', value)}
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {UNIT_OPTIONS.map((unit) => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={item.kolicina}
-                    onChange={(e) => onUpdateItem(item.id, 'kolicina', parseFloat(e.target.value) || 0)}
-                    className="w-20"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={item.cijena}
-                    onChange={(e) => onUpdateItem(item.id, 'cijena', parseFloat(e.target.value) || 0)}
-                    className="w-24"
-                  />
-                </TableCell>
-                <TableCell className="font-medium">{item.ukupno.toFixed(2)} €</TableCell>
-                <TableCell className="text-center">
-                  <Checkbox
-                    checked={item.is_optional || false}
-                    onCheckedChange={(checked) => onUpdateItem(item.id, 'is_optional', !!checked)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onRemoveItem(item.id)}
-                    disabled={items.length === 1}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="md:hidden space-y-3">
-        {items.map((item, index) => (
-          <div key={item.id} className="border border-border rounded-lg p-3 bg-card space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Stavka {index + 1}</span>
+      {groups.map((group) => (
+        <Card key={group.id} className="border-border">
+          <CardHeader className="p-4 pb-2">
+            <div className="flex items-center gap-3">
+              <span className="text-lg font-bold text-primary">{group.redni_broj}.</span>
+              <Input
+                value={group.naziv}
+                onChange={(e) => onUpdateGroup(group.id, e.target.value)}
+                placeholder="Naziv grupe (npr. FILTRACIJA I CIRKULACIJA)"
+                className="flex-1 font-semibold"
+              />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => onRemoveItem(item.id)}
-                disabled={items.length === 1}
+                onClick={() => onRemoveGroup(group.id)}
+                disabled={groups.length === 1}
+                className="text-destructive hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4 text-destructive" />
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Naziv</Label>
-              <Input
-                value={item.opis}
-                onChange={(e) => onUpdateItem(item.id, 'opis', e.target.value)}
-                placeholder="Naziv stavke"
-                required
-              />
+          </CardHeader>
+          <CardContent className="p-4 pt-2">
+            {/* Desktop table */}
+            <div className="hidden md:block">
+              <div className="grid grid-cols-12 gap-2 mb-2 text-xs font-medium text-muted-foreground px-1">
+                <div className="col-span-4">Naziv</div>
+                <div className="col-span-1">Jed</div>
+                <div className="col-span-2">Kol</div>
+                <div className="col-span-2">Jed cijena</div>
+                <div className="col-span-2">Ukupno</div>
+                <div className="col-span-1"></div>
+              </div>
+              {group.items.map((item) => (
+                <div key={item.id} className="grid grid-cols-12 gap-2 mb-2 items-center">
+                  <div className="col-span-4">
+                    <Input
+                      value={item.opis}
+                      onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
+                      placeholder="Naziv stavke"
+                      required
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <Select
+                      value={item.jedinica}
+                      onValueChange={(value) => onUpdateItem(group.id, item.id, 'jedinica', value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border border-border shadow-md z-50">
+                        {UNIT_OPTIONS.map((unit) => (
+                          <SelectItem key={unit.value} value={unit.value}>
+                            {unit.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={item.kolicina}
+                      onChange={(e) => onUpdateItem(group.id, item.id, 'kolicina', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={item.cijena}
+                      onChange={(e) => onUpdateItem(group.id, item.id, 'cijena', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="col-span-2 flex items-center gap-2">
+                    <span className="font-medium text-sm">{item.ukupno.toFixed(2)} €</span>
+                    <div className="flex items-center gap-1">
+                      <Checkbox
+                        id={`opt-${item.id}`}
+                        checked={item.is_optional || false}
+                        onCheckedChange={(checked) => onUpdateItem(group.id, item.id, 'is_optional', !!checked)}
+                      />
+                      <Label htmlFor={`opt-${item.id}`} className="text-xs text-muted-foreground">Opc</Label>
+                    </div>
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onRemoveItem(group.id, item.id)}
+                      disabled={group.items.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs">Jedinica</Label>
-                <Select
-                  value={item.jedinica}
-                  onValueChange={(value) => onUpdateItem(item.id, 'jedinica', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {UNIT_OPTIONS.map((unit) => (
-                      <SelectItem key={unit.value} value={unit.value}>
-                        {unit.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Količina</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={item.kolicina}
-                  onChange={(e) => onUpdateItem(item.id, 'kolicina', parseFloat(e.target.value) || 0)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs">Cijena (€)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={item.cijena}
-                  onChange={(e) => onUpdateItem(item.id, 'cijena', parseFloat(e.target.value) || 0)}
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id={`optional-${item.id}`}
-                  checked={item.is_optional || false}
-                  onCheckedChange={(checked) => onUpdateItem(item.id, 'is_optional', !!checked)}
-                />
-                <Label htmlFor={`optional-${item.id}`} className="text-xs text-muted-foreground">
-                  Opcijski
-                </Label>
-              </div>
-              <span className="font-bold text-primary">{item.ukupno.toFixed(2)} €</span>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="flex justify-end mt-4">
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {group.items.map((item, index) => (
+                <div key={item.id} className="border border-border rounded-lg p-3 bg-muted/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Stavka {index + 1}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onRemoveItem(group.id, item.id)}
+                      disabled={group.items.length === 1}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Naziv</Label>
+                    <Input
+                      value={item.opis}
+                      onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
+                      placeholder="Naziv stavke"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Jedinica</Label>
+                      <Select
+                        value={item.jedinica}
+                        onValueChange={(value) => onUpdateItem(group.id, item.id, 'jedinica', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border border-border shadow-md z-50">
+                          {UNIT_OPTIONS.map((unit) => (
+                            <SelectItem key={unit.value} value={unit.value}>
+                              {unit.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Količina</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.kolicina}
+                        onChange={(e) => onUpdateItem(group.id, item.id, 'kolicina', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Cijena (€)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.cijena}
+                        onChange={(e) => onUpdateItem(group.id, item.id, 'cijena', parseFloat(e.target.value) || 0)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id={`optional-${item.id}`}
+                        checked={item.is_optional || false}
+                        onCheckedChange={(checked) => onUpdateItem(group.id, item.id, 'is_optional', !!checked)}
+                      />
+                      <Label htmlFor={`optional-${item.id}`} className="text-xs text-muted-foreground">
+                        Opcijski
+                      </Label>
+                    </div>
+                    <span className="font-bold text-primary">{item.ukupno.toFixed(2)} €</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onAddItem(group.id)}
+              className="mt-2 w-full border border-dashed border-border hover:border-primary"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Dodaj stavku
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+
+      <div className="flex justify-end mt-4 pt-4 border-t border-border">
         <div className="text-lg md:text-xl font-bold">Ukupno: {total.toFixed(2)} €</div>
       </div>
     </div>
