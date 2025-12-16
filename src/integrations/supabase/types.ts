@@ -169,6 +169,116 @@ export type Database = {
           },
         ]
       }
+      offer_template_groups: {
+        Row: {
+          created_at: string
+          id: string
+          naziv: string
+          redni_broj: number
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          naziv: string
+          redni_broj?: number
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          naziv?: string
+          redni_broj?: number
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_template_groups_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "offer_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_template_items: {
+        Row: {
+          cijena: number
+          created_at: string
+          group_id: string | null
+          id: string
+          is_optional: boolean
+          jedinica: string
+          kolicina: number
+          opis: string
+          template_id: string
+        }
+        Insert: {
+          cijena?: number
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_optional?: boolean
+          jedinica?: string
+          kolicina?: number
+          opis: string
+          template_id: string
+        }
+        Update: {
+          cijena?: number
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_optional?: boolean
+          jedinica?: string
+          kolicina?: number
+          opis?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_template_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "offer_template_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "offer_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_templates: {
+        Row: {
+          created_at: string
+          id: string
+          napomena: string | null
+          naziv: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          napomena?: string | null
+          naziv: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          napomena?: string | null
+          naziv?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           accepted_at: string | null
