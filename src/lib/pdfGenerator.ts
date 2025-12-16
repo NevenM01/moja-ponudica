@@ -16,6 +16,13 @@ interface OfferItem {
   kolicina: number;
   cijena: number;
   ukupno: number;
+  group_id?: string;
+}
+
+interface OfferGroup {
+  id: string;
+  naziv: string;
+  redni_broj: number;
 }
 
 interface CompanyProfile {
@@ -32,23 +39,65 @@ const formatNumber = (num: number) => {
   return num.toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-export const generatePDF = (offer: Offer, items: OfferItem[], company: CompanyProfile) => {
+export const generatePDF = (
+  offer: Offer,
+  items: OfferItem[],
+  company: CompanyProfile,
+  groups?: OfferGroup[]
+) => {
   const offerNumber = offer.offer_number;
 
-  const itemsHtml = items
-    .map(
-      (item, index) => `
-      <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 40px;">${index + 1}.</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.opis}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>
-      </tr>
-    `
-    )
-    .join('');
+  // Generate items HTML, grouped if groups exist
+  let itemsHtml = '';
+  let itemCounter = 1;
+
+  if (groups && groups.length > 0) {
+    groups.sort((a, b) => a.redni_broj - b.redni_broj);
+    
+    groups.forEach((group) => {
+      const groupItems = items.filter(item => item.group_id === group.id);
+      
+      if (groupItems.length > 0 || group.naziv) {
+        // Group header
+        itemsHtml += `
+          <tr>
+            <td colspan="6" style="padding: 12px 8px 8px; font-weight: bold; font-size: 12px; background: #f5f5f5; border-bottom: 2px solid #333;">
+              ${group.redni_broj}. ${group.naziv}
+            </td>
+          </tr>
+        `;
+        
+        // Group items
+        groupItems.forEach((item) => {
+          itemsHtml += `
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 40px;">${itemCounter}.</td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.opis}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))}</td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>
+            </tr>
+          `;
+          itemCounter++;
+        });
+      }
+    });
+  } else {
+    // No groups - flat items
+    items.forEach((item, index) => {
+      itemsHtml += `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 40px;">${index + 1}.</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.opis}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>
+        </tr>
+      `;
+    });
+  }
 
   const html = `
     <!DOCTYPE html>

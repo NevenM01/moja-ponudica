@@ -83,10 +83,43 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_item_groups: {
+        Row: {
+          created_at: string
+          id: string
+          naziv: string
+          offer_id: string
+          redni_broj: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          naziv: string
+          offer_id: string
+          redni_broj?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          naziv?: string
+          offer_id?: string
+          redni_broj?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_item_groups_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_items: {
         Row: {
           cijena: number
           created_at: string
+          group_id: string | null
           id: string
           is_optional: boolean
           jedinica: string
@@ -98,6 +131,7 @@ export type Database = {
         Insert: {
           cijena?: number
           created_at?: string
+          group_id?: string | null
           id?: string
           is_optional?: boolean
           jedinica?: string
@@ -109,6 +143,7 @@ export type Database = {
         Update: {
           cijena?: number
           created_at?: string
+          group_id?: string | null
           id?: string
           is_optional?: boolean
           jedinica?: string
@@ -118,6 +153,13 @@ export type Database = {
           ukupno?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "offer_items_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "offer_item_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "offer_items_offer_id_fkey"
             columns: ["offer_id"]
