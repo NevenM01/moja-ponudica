@@ -26,6 +26,7 @@ interface Offer {
 interface OfferItem {
   id: string;
   opis: string;
+  jedinica: string;
   kolicina: number;
   cijena: number;
   ukupno: number;
@@ -247,7 +248,7 @@ const OfferDetail = () => {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-center text-foreground">kom</TableCell>
+                    <TableCell className="text-center text-foreground">{item.jedinica || 'kom'}</TableCell>
                     <TableCell className="text-center text-foreground">{Number(item.kolicina)}</TableCell>
                     <TableCell className="text-right text-foreground">{formatNumber(Number(item.cijena))}</TableCell>
                     <TableCell className="text-right font-medium text-foreground">{formatNumber(Number(item.ukupno))}</TableCell>
@@ -271,7 +272,7 @@ const OfferDetail = () => {
                 <span className="col-span-2">
                   {item.opis}
                   {item.is_optional && <span className="text-xs text-muted-foreground block">(opcijski)</span>}
-                  <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)} kom</span>
+                  <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)} {item.jedinica || 'kom'}</span>
                 </span>
                 <span className="text-right">{formatNumber(Number(item.cijena))}</span>
                 <span className="text-right font-medium">{formatNumber(Number(item.ukupno))}</span>

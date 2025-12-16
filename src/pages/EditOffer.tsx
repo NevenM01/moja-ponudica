@@ -16,6 +16,7 @@ import OfferItemsEditor from '@/components/OfferItemsEditor';
 interface OfferItem {
   id: string;
   opis: string;
+  jedinica: string;
   kolicina: number;
   cijena: number;
   ukupno: number;
@@ -86,13 +87,14 @@ const EditOffer = () => {
     const existingItems = (itemsResult.data || []).map((item) => ({
       id: item.id,
       opis: item.opis,
+      jedinica: item.jedinica || 'kom',
       kolicina: Number(item.kolicina),
       cijena: Number(item.cijena),
       ukupno: Number(item.ukupno),
       is_optional: item.is_optional || false,
     }));
 
-    setItems(existingItems.length > 0 ? existingItems : [{ id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
+    setItems(existingItems.length > 0 ? existingItems : [{ id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
     setCompanyProfile(profileResult.data);
     setFetching(false);
   };
@@ -113,7 +115,7 @@ const EditOffer = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
+    setItems([...items, { id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false, isNew: true }]);
   };
 
   const removeItem = (itemId: string) => {
@@ -171,6 +173,7 @@ const EditOffer = () => {
           .from('offer_items')
           .update({
             opis: item.opis,
+            jedinica: item.jedinica,
             kolicina: item.kolicina,
             cijena: item.cijena,
             ukupno: item.ukupno,
@@ -184,6 +187,7 @@ const EditOffer = () => {
         const itemsToInsert = newItems.map((item) => ({
           offer_id: id,
           opis: item.opis,
+          jedinica: item.jedinica,
           kolicina: item.kolicina,
           cijena: item.cijena,
           ukupno: item.ukupno,

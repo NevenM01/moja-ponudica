@@ -2,12 +2,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface OfferItem {
   id: string;
   opis: string;
+  jedinica: string;
   kolicina: number;
   cijena: number;
   ukupno: number;
@@ -21,6 +23,17 @@ interface OfferItemsEditorProps {
   onRemoveItem: (id: string) => void;
   total: number;
 }
+
+const UNIT_OPTIONS = [
+  { value: 'kom', label: 'kom' },
+  { value: 'sat', label: 'sat' },
+  { value: 'm', label: 'm' },
+  { value: 'm2', label: 'm²' },
+  { value: 'm3', label: 'm³' },
+  { value: 'kg', label: 'kg' },
+  { value: 'l', label: 'l' },
+  { value: 'paušal', label: 'paušal' },
+];
 
 const OfferItemsEditor = ({
   items,
@@ -45,11 +58,12 @@ const OfferItemsEditor = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[35%]">Opis</TableHead>
-              <TableHead>Količina</TableHead>
-              <TableHead>Cijena (€)</TableHead>
-              <TableHead>Ukupno (€)</TableHead>
-              <TableHead className="w-24 text-center">Opcijski</TableHead>
+              <TableHead className="w-[30%]">Naziv</TableHead>
+              <TableHead className="w-20">Jed</TableHead>
+              <TableHead className="w-20">Kol</TableHead>
+              <TableHead className="w-24">Jed cijena</TableHead>
+              <TableHead className="w-24">Ukupno</TableHead>
+              <TableHead className="w-20 text-center">Opcijski</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
@@ -60,9 +74,26 @@ const OfferItemsEditor = ({
                   <Input
                     value={item.opis}
                     onChange={(e) => onUpdateItem(item.id, 'opis', e.target.value)}
-                    placeholder="Opis stavke"
+                    placeholder="Naziv stavke"
                     required
                   />
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={item.jedinica}
+                    onValueChange={(value) => onUpdateItem(item.id, 'jedinica', value)}
+                  >
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UNIT_OPTIONS.map((unit) => (
+                        <SelectItem key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </TableCell>
                 <TableCell>
                   <Input
@@ -71,6 +102,7 @@ const OfferItemsEditor = ({
                     step="0.01"
                     value={item.kolicina}
                     onChange={(e) => onUpdateItem(item.id, 'kolicina', parseFloat(e.target.value) || 0)}
+                    className="w-20"
                   />
                 </TableCell>
                 <TableCell>
@@ -80,9 +112,10 @@ const OfferItemsEditor = ({
                     step="0.01"
                     value={item.cijena}
                     onChange={(e) => onUpdateItem(item.id, 'cijena', parseFloat(e.target.value) || 0)}
+                    className="w-24"
                   />
                 </TableCell>
-                <TableCell className="font-medium">{item.ukupno.toFixed(2)}</TableCell>
+                <TableCell className="font-medium">{item.ukupno.toFixed(2)} €</TableCell>
                 <TableCell className="text-center">
                   <Checkbox
                     checked={item.is_optional || false}
@@ -123,15 +156,33 @@ const OfferItemsEditor = ({
               </Button>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs">Opis</Label>
+              <Label className="text-xs">Naziv</Label>
               <Input
                 value={item.opis}
                 onChange={(e) => onUpdateItem(item.id, 'opis', e.target.value)}
-                placeholder="Opis stavke"
+                placeholder="Naziv stavke"
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <Label className="text-xs">Jedinica</Label>
+                <Select
+                  value={item.jedinica}
+                  onValueChange={(value) => onUpdateItem(item.id, 'jedinica', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UNIT_OPTIONS.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label className="text-xs">Količina</Label>
                 <Input
