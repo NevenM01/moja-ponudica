@@ -12,6 +12,7 @@ interface Offer {
 
 interface OfferItem {
   opis: string;
+  jedinica: string;
   kolicina: number;
   cijena: number;
   ukupno: number;
@@ -40,7 +41,7 @@ export const generatePDF = (offer: Offer, items: OfferItem[], company: CompanyPr
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 40px;">${index + 1}.</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.opis}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">kom</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))}</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>

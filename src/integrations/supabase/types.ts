@@ -89,6 +89,7 @@ export type Database = {
           created_at: string
           id: string
           is_optional: boolean
+          jedinica: string
           kolicina: number
           offer_id: string
           opis: string
@@ -99,6 +100,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_optional?: boolean
+          jedinica?: string
           kolicina?: number
           offer_id: string
           opis: string
@@ -109,6 +111,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_optional?: boolean
+          jedinica?: string
           kolicina?: number
           offer_id?: string
           opis?: string

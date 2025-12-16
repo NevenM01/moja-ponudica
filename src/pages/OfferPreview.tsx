@@ -24,6 +24,7 @@ interface Offer {
 interface OfferItem {
   id: string;
   opis: string;
+  jedinica: string;
   kolicina: number;
   cijena: number;
   ukupno: number;
@@ -280,7 +281,7 @@ const OfferPreview = () => {
                               </span>
                             )}
                           </td>
-                          <td className="p-3 text-center">kom</td>
+                          <td className="p-3 text-center">{item.jedinica || 'kom'}</td>
                           <td className="p-3 text-center">{item.kolicina}</td>
                           <td className="p-3 text-right">{formatNumber(item.cijena)} €</td>
                           <td className="p-3 text-right font-medium">{formatNumber(item.ukupno)} €</td>

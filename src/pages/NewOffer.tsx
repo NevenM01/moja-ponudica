@@ -16,6 +16,7 @@ import OfferItemsEditor from '@/components/OfferItemsEditor';
 interface OfferItem {
   id: string;
   opis: string;
+  jedinica: string;
   kolicina: number;
   cijena: number;
   ukupno: number;
@@ -44,7 +45,7 @@ const NewOffer = () => {
   const [clientAdresa, setClientAdresa] = useState('');
   const [napomena, setNapomena] = useState('');
   const [items, setItems] = useState<OfferItem[]>([
-    { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false },
+    { id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false },
   ]);
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const NewOffer = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { id: crypto.randomUUID(), opis: '', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false }]);
+    setItems([...items, { id: crypto.randomUUID(), opis: '', jedinica: 'kom', kolicina: 1, cijena: 0, ukupno: 0, is_optional: false }]);
   };
 
   const removeItem = (id: string) => {
@@ -135,6 +136,7 @@ const NewOffer = () => {
       const itemsToInsert = items.map((item) => ({
         offer_id: offer.id,
         opis: item.opis,
+        jedinica: item.jedinica,
         kolicina: item.kolicina,
         cijena: item.cijena,
         ukupno: item.ukupno,
