@@ -210,27 +210,35 @@ const OfferDetail = () => {
             </div>
           </div>
 
-          {/* Offer title */}
-          <div className="text-center py-4">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Ponuda {offer.offer_number}
-            </h1>
+          {/* PREDMET section */}
+          <div className="space-y-2 text-sm">
+            <div className="flex gap-2">
+              <span className="font-bold w-20">PREDMET:</span>
+              <span className="font-bold">PONUDA {offer.offer_number}</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="font-bold w-20">KLIJENT:</span>
+              <span>{offer.client_naziv}</span>
+            </div>
           </div>
 
           {/* Items table - Desktop */}
           <div className="hidden md:block">
             <Table>
               <TableHeader>
-                <TableRow className="border-t-2 border-b-2 border-foreground/20">
+                <TableRow className="border-t-2 border-b-2 border-foreground/20 bg-muted/50">
+                  <TableHead className="font-bold text-foreground w-12 text-center">Br.</TableHead>
                   <TableHead className="font-bold text-foreground">Naziv</TableHead>
-                  <TableHead className="text-center font-bold text-foreground">Količina</TableHead>
-                  <TableHead className="text-right font-bold text-foreground">Cijena</TableHead>
-                  <TableHead className="text-right font-bold text-foreground">Ukupno</TableHead>
+                  <TableHead className="text-center font-bold text-foreground w-16">Jed</TableHead>
+                  <TableHead className="text-center font-bold text-foreground w-16">Kol</TableHead>
+                  <TableHead className="text-right font-bold text-foreground w-24">Jed cijena</TableHead>
+                  <TableHead className="text-right font-bold text-foreground w-24">Ukupno</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <TableRow key={item.id} className={`border-b border-border ${item.is_optional ? 'bg-muted/30' : ''}`}>
+                    <TableCell className="text-center text-foreground">{index + 1}.</TableCell>
                     <TableCell className="text-foreground">
                       {item.opis}
                       {item.is_optional && (
@@ -239,6 +247,7 @@ const OfferDetail = () => {
                         </span>
                       )}
                     </TableCell>
+                    <TableCell className="text-center text-foreground">kom</TableCell>
                     <TableCell className="text-center text-foreground">{Number(item.kolicina)}</TableCell>
                     <TableCell className="text-right text-foreground">{formatNumber(Number(item.cijena))}</TableCell>
                     <TableCell className="text-right font-medium text-foreground">{formatNumber(Number(item.ukupno))}</TableCell>
@@ -250,17 +259,19 @@ const OfferDetail = () => {
 
           {/* Items - Mobile */}
           <div className="md:hidden space-y-3">
-            <div className="grid grid-cols-4 gap-2 py-2 border-t-2 border-b-2 border-foreground/20 text-sm font-bold">
+            <div className="grid grid-cols-5 gap-1 py-2 border-t-2 border-b-2 border-foreground/20 text-xs font-bold bg-muted/50 px-2">
+              <span className="text-center">Br.</span>
               <span className="col-span-2">Naziv</span>
               <span className="text-right">Cijena</span>
               <span className="text-right">Ukupno</span>
             </div>
-            {items.map((item) => (
-              <div key={item.id} className={`grid grid-cols-4 gap-2 py-2 border-b border-border text-sm ${item.is_optional ? 'bg-muted/30 rounded px-2' : ''}`}>
+            {items.map((item, index) => (
+              <div key={item.id} className={`grid grid-cols-5 gap-1 py-2 border-b border-border text-sm px-2 ${item.is_optional ? 'bg-muted/30 rounded' : ''}`}>
+                <span className="text-center text-muted-foreground">{index + 1}.</span>
                 <span className="col-span-2">
                   {item.opis}
                   {item.is_optional && <span className="text-xs text-muted-foreground block">(opcijski)</span>}
-                  <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)}</span>
+                  <span className="text-muted-foreground block text-xs">Kol: {Number(item.kolicina)} kom</span>
                 </span>
                 <span className="text-right">{formatNumber(Number(item.cijena))}</span>
                 <span className="text-right font-medium">{formatNumber(Number(item.ukupno))}</span>
@@ -268,15 +279,16 @@ const OfferDetail = () => {
             ))}
           </div>
 
-          {/* Totals */}
+          {/* REKAPITULACIJA */}
           <div className="pt-4 border-t-2 border-foreground/20">
-            <div className="flex flex-col items-end space-y-1 text-sm">
-              <div className="flex justify-between w-48">
-                <span className="text-muted-foreground">Ukupno:</span>
+            <h3 className="font-bold text-sm mb-3 underline">REKAPITULACIJA</h3>
+            <div className="flex flex-col items-end space-y-2 text-sm">
+              <div className="flex justify-between w-56 py-1 border-b border-border">
+                <span className="text-muted-foreground">Ukupno bez PDV-a:</span>
                 <span className="font-medium text-foreground">{formatNumber(Number(offer.ukupno))} €</span>
               </div>
-              <div className="flex justify-between w-48 pt-2 border-t border-border">
-                <span className="font-bold text-foreground">Ukupno za platiti:</span>
+              <div className="flex justify-between w-56 py-2 border-t-2 border-b-2 border-foreground/20">
+                <span className="font-bold text-foreground">SVEUKUPNO:</span>
                 <span className="font-bold text-foreground">{formatNumber(Number(offer.ukupno))} €</span>
               </div>
             </div>
@@ -290,17 +302,26 @@ const OfferDetail = () => {
             </div>
           )}
 
-          {/* Footer with bank info */}
-          {companyProfile?.iban && (
-            <div className="pt-4 border-t border-border flex flex-col md:flex-row justify-between gap-4 text-sm">
-              <div className="text-muted-foreground">
-                <p>Način plaćanja: transakcijski račun</p>
-              </div>
-              <div className="text-right">
-                <p className="text-muted-foreground">IBAN: {companyProfile.iban}</p>
+          {/* Footer with bank info and signature */}
+          <div className="pt-4 border-t border-border flex flex-col md:flex-row justify-between gap-6 text-sm">
+            <div className="text-muted-foreground space-y-1">
+              {companyProfile?.iban && (
+                <>
+                  <p><span className="font-medium">Način plaćanja:</span> transakcijski račun</p>
+                  <p>IBAN: {companyProfile.iban}</p>
+                  <p>Poziv na broj: {offer.offer_number}</p>
+                </>
+              )}
+            </div>
+            <div className="text-right space-y-2">
+              <p className="text-muted-foreground">
+                Datum: {format(new Date(offer.created_at), 'dd.MM.yyyy.')}
+              </p>
+              <div className="mt-8 pt-2 border-t border-foreground/30 w-48 ml-auto">
+                <p className="text-xs text-muted-foreground">Za {companyProfile?.naziv_firme}</p>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </AppLayout>

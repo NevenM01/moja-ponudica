@@ -217,6 +217,18 @@ const OfferPreview = () => {
               </div>
             </div>
 
+            {/* PREDMET section */}
+            <div className="mb-6 space-y-1 text-sm">
+              <div className="flex gap-2">
+                <span className="font-bold w-20">PREDMET:</span>
+                <span className="font-bold">PONUDA {offer.offer_number}</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="font-bold w-20">KLIJENT:</span>
+                <span>{offer.client_naziv}</span>
+              </div>
+            </div>
+
             {/* Items Table */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
@@ -232,10 +244,12 @@ const OfferPreview = () => {
                   <thead className="bg-muted/50">
                     <tr>
                       {hasOptionalItems && <th className="w-12 p-3"></th>}
-                      <th className="text-left p-3 text-sm font-medium">Opis</th>
-                      <th className="text-center p-3 text-sm font-medium w-24">Količina</th>
-                      <th className="text-right p-3 text-sm font-medium w-32">Cijena</th>
-                      <th className="text-right p-3 text-sm font-medium w-32">Ukupno</th>
+                      <th className="text-center p-3 text-sm font-medium w-12">Br.</th>
+                      <th className="text-left p-3 text-sm font-medium">Naziv</th>
+                      <th className="text-center p-3 text-sm font-medium w-16">Jed</th>
+                      <th className="text-center p-3 text-sm font-medium w-16">Kol</th>
+                      <th className="text-right p-3 text-sm font-medium w-24">Jed cijena</th>
+                      <th className="text-right p-3 text-sm font-medium w-24">Ukupno</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -257,6 +271,7 @@ const OfferPreview = () => {
                               ) : null}
                             </td>
                           )}
+                          <td className="p-3 text-center text-muted-foreground">{index + 1}.</td>
                           <td className="p-3">
                             {item.opis}
                             {item.is_optional && (
@@ -265,6 +280,7 @@ const OfferPreview = () => {
                               </span>
                             )}
                           </td>
+                          <td className="p-3 text-center">kom</td>
                           <td className="p-3 text-center">{item.kolicina}</td>
                           <td className="p-3 text-right">{formatNumber(item.cijena)} €</td>
                           <td className="p-3 text-right font-medium">{formatNumber(item.ukupno)} €</td>
@@ -322,11 +338,20 @@ const OfferPreview = () => {
 
             <Separator className="my-6" />
 
-            {/* Total */}
-            <div className="flex justify-end">
-              <div className="bg-primary/5 rounded-lg p-4 sm:p-6 text-right">
-                <p className="text-sm text-muted-foreground mb-1">Ukupno za platiti</p>
-                <p className="text-3xl font-bold text-primary">{formatNumber(calculatedTotal)} €</p>
+            {/* REKAPITULACIJA */}
+            <div>
+              <h3 className="font-bold text-sm mb-3 underline">REKAPITULACIJA</h3>
+              <div className="flex justify-end">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between w-56 py-1 border-b">
+                    <span className="text-muted-foreground">Ukupno bez PDV-a:</span>
+                    <span className="font-medium">{formatNumber(calculatedTotal)} €</span>
+                  </div>
+                  <div className="flex justify-between w-56 py-2 bg-primary/5 rounded px-2">
+                    <span className="font-bold">SVEUKUPNO:</span>
+                    <span className="font-bold text-primary">{formatNumber(calculatedTotal)} €</span>
+                  </div>
+                </div>
               </div>
             </div>
 

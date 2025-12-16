@@ -32,16 +32,18 @@ const formatNumber = (num: number) => {
 };
 
 export const generatePDF = (offer: Offer, items: OfferItem[], company: CompanyProfile) => {
-  const offerNumber = offer.offer_number.split('-').pop() || offer.offer_number;
+  const offerNumber = offer.offer_number;
 
   const itemsHtml = items
     .map(
-      (item) => `
+      (item, index) => `
       <tr>
-        <td style="padding: 12px 8px; border-bottom: 1px solid #e5e5e5;">${item.opis}</td>
-        <td style="padding: 12px 8px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Number(item.kolicina)}</td>
-        <td style="padding: 12px 8px; border-bottom: 1px solid #e5e5e5; text-align: right;">${formatNumber(Number(item.cijena))}</td>
-        <td style="padding: 12px 8px; border-bottom: 1px solid #e5e5e5; text-align: right; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 40px;">${index + 1}.</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.opis}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">kom</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>
       </tr>
     `
     )
@@ -56,186 +58,228 @@ export const generatePDF = (offer: Offer, items: OfferItem[], company: CompanyPr
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-          font-family: 'Segoe UI', Arial, sans-serif; 
-          padding: 40px; 
-          color: #1a1a1a; 
-          font-size: 14px;
-          line-height: 1.5;
+          font-family: Arial, sans-serif; 
+          padding: 30px 40px; 
+          color: #333; 
+          font-size: 11px;
+          line-height: 1.4;
         }
-        .container { max-width: 800px; margin: 0 auto; }
         .header { 
           display: flex; 
           justify-content: space-between; 
           align-items: flex-start;
-          padding-bottom: 24px;
-          border-bottom: 1px solid #e5e5e5;
-          margin-bottom: 24px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #333;
+          margin-bottom: 20px;
         }
-        .logo { height: 60px; width: auto; }
+        .logo { height: 50px; width: auto; }
         .logo-placeholder { 
-          height: 60px; 
-          width: 120px; 
+          height: 50px; 
+          width: 100px; 
           background: #f5f5f5; 
           display: flex; 
           align-items: center; 
           justify-content: center; 
           color: #999;
-          border-radius: 4px;
+          font-size: 12px;
         }
-        .company-info { text-align: right; font-size: 13px; }
-        .company-name { font-weight: bold; font-size: 16px; margin-bottom: 4px; }
-        .text-muted { color: #666; }
+        .company-info { text-align: right; font-size: 10px; }
+        .company-name { font-weight: bold; font-size: 14px; margin-bottom: 3px; }
+        
+        .predmet-section {
+          margin: 20px 0;
+          font-size: 11px;
+        }
+        .predmet-row {
+          display: flex;
+          margin-bottom: 8px;
+        }
+        .predmet-label {
+          font-weight: bold;
+          width: 80px;
+        }
+        .predmet-value {
+          flex: 1;
+        }
         
         .client-section {
-          display: flex;
-          justify-content: space-between;
-          padding: 24px 0;
-          border-bottom: 1px solid #e5e5e5;
-          margin-bottom: 32px;
+          margin: 20px 0;
+          padding: 15px;
+          background: #f9f9f9;
+          border: 1px solid #ddd;
         }
-        .client-info { font-size: 13px; }
-        .client-label { color: #666; margin-bottom: 4px; }
-        .client-name { font-weight: bold; font-size: 15px; margin-bottom: 4px; }
-        .date-info { text-align: right; font-size: 13px; color: #666; }
-        
-        .offer-title { 
-          text-align: center; 
-          font-size: 28px; 
-          font-weight: bold; 
-          margin: 32px 0;
-        }
+        .client-label { font-weight: bold; margin-bottom: 5px; }
         
         table { 
           width: 100%; 
           border-collapse: collapse; 
-          margin-bottom: 24px; 
+          margin: 20px 0; 
+          font-size: 10px;
         }
         thead tr {
-          border-top: 2px solid #333;
-          border-bottom: 2px solid #333;
+          background: #f0f0f0;
         }
         th { 
-          padding: 12px 8px; 
+          padding: 10px 8px; 
           text-align: left; 
           font-weight: bold;
-          font-size: 14px;
+          font-size: 10px;
+          border-bottom: 2px solid #333;
+          border-top: 2px solid #333;
         }
         th.text-center { text-align: center; }
         th.text-right { text-align: right; }
         
-        .totals {
+        .rekapitulacija {
+          margin-top: 30px;
           border-top: 2px solid #333;
-          padding-top: 16px;
-          margin-top: 16px;
+          padding-top: 15px;
+        }
+        .rekapitulacija-title {
+          font-weight: bold;
+          font-size: 12px;
+          margin-bottom: 10px;
+          text-decoration: underline;
         }
         .total-row {
           display: flex;
-          justify-content: flex-end;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid #ddd;
+        }
+        .total-row.grand-total {
+          border-top: 2px solid #333;
+          border-bottom: 2px solid #333;
+          font-weight: bold;
+          font-size: 13px;
+          margin-top: 10px;
+          padding: 12px 0;
+        }
+        
+        .napomena { 
+          margin-top: 30px;
+          padding: 15px;
+          background: #f9f9f9;
+          border: 1px solid #ddd;
+          font-size: 10px;
+        }
+        .napomena-title {
+          font-weight: bold;
           margin-bottom: 8px;
         }
-        .total-label { width: 150px; text-align: left; color: #666; }
-        .total-value { width: 120px; text-align: right; font-weight: 500; }
-        .grand-total {
-          border-top: 1px solid #e5e5e5;
-          padding-top: 8px;
-          margin-top: 8px;
-        }
-        .grand-total .total-label,
-        .grand-total .total-value { font-weight: bold; color: #1a1a1a; }
-        
-        .note { 
-          border-top: 1px solid #e5e5e5; 
-          padding-top: 24px; 
-          margin-top: 32px; 
-        }
-        .note-label { color: #666; margin-bottom: 8px; }
         
         .footer { 
+          margin-top: 40px; 
           display: flex;
           justify-content: space-between;
-          margin-top: 48px; 
-          padding-top: 24px; 
-          border-top: 1px solid #e5e5e5; 
-          font-size: 12px; 
-          color: #666; 
+          font-size: 10px;
+        }
+        .footer-left {
+          max-width: 60%;
+        }
+        .footer-right {
+          text-align: right;
+        }
+        .signature-line {
+          margin-top: 40px;
+          border-top: 1px solid #333;
+          width: 200px;
+          text-align: center;
+          padding-top: 5px;
+          font-size: 10px;
         }
         
         @media print {
-          body { padding: 20px; }
-          @page { margin: 20mm; }
+          body { padding: 15px; }
+          @page { margin: 15mm; }
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <div>
-            ${company.logo_url 
-              ? `<img src="${company.logo_url}" alt="Logo" class="logo" />`
-              : '<div class="logo-placeholder">Logo</div>'
-            }
-          </div>
-          <div class="company-info">
-            <div class="company-name">${company.naziv_firme}</div>
-            <div class="text-muted">${company.adresa}</div>
-            <div class="text-muted">OIB: ${company.oib}</div>
-            ${company.telefon ? `<div class="text-muted">Tel: ${company.telefon}</div>` : ''}
-            ${company.email ? `<div class="text-muted">${company.email}</div>` : ''}
-          </div>
+      <div class="header">
+        <div>
+          ${company.logo_url 
+            ? `<img src="${company.logo_url}" alt="Logo" class="logo" />`
+            : `<div class="logo-placeholder">${company.naziv_firme.substring(0, 10)}</div>`
+          }
         </div>
-
-        <div class="client-section">
-          <div class="client-info">
-            <div class="client-label">Kupac:</div>
-            <div class="client-name">${offer.client_naziv}</div>
-            ${offer.client_adresa ? `<div class="text-muted">${offer.client_adresa}</div>` : ''}
-            ${offer.client_oib ? `<div class="text-muted">OIB: ${offer.client_oib}</div>` : ''}
-          </div>
-          <div class="date-info">
-            <div>Datum ponude: ${format(new Date(offer.created_at), 'dd.MM.yyyy.')}</div>
-          </div>
+        <div class="company-info">
+          <div class="company-name">${company.naziv_firme}</div>
+          <div>${company.adresa}</div>
+          <div>OIB: ${company.oib}</div>
+          ${company.telefon ? `<div>Tel: ${company.telefon}</div>` : ''}
+          ${company.email ? `<div>${company.email}</div>` : ''}
+          ${company.iban ? `<div>IBAN: ${company.iban}</div>` : ''}
         </div>
+      </div>
 
-        <div class="offer-title">Ponuda # ${offerNumber}</div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Naziv</th>
-              <th class="text-center">Količina</th>
-              <th class="text-right">Cijena</th>
-              <th class="text-right">Ukupno</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsHtml}
-          </tbody>
-        </table>
-
-        <div class="totals">
-          <div class="total-row">
-            <span class="total-label">Ukupno:</span>
-            <span class="total-value">${formatNumber(Number(offer.ukupno))} €</span>
-          </div>
-          <div class="total-row grand-total">
-            <span class="total-label">Ukupno za platiti:</span>
-            <span class="total-value">${formatNumber(Number(offer.ukupno))} €</span>
-          </div>
+      <div class="predmet-section">
+        <div class="predmet-row">
+          <span class="predmet-label">PREDMET:</span>
+          <span class="predmet-value"><strong>PONUDA ${offerNumber}</strong></span>
         </div>
+        <div class="predmet-row">
+          <span class="predmet-label">KLIJENT:</span>
+          <span class="predmet-value">${offer.client_naziv}</span>
+        </div>
+      </div>
 
-        ${offer.napomena ? `
-          <div class="note">
-            <div class="note-label">Napomena:</div>
-            <p>${offer.napomena}</p>
-          </div>
-        ` : ''}
+      <div class="client-section">
+        <div class="client-label">Podaci o klijentu:</div>
+        <div><strong>${offer.client_naziv}</strong></div>
+        ${offer.client_adresa ? `<div>${offer.client_adresa}</div>` : ''}
+        ${offer.client_oib ? `<div>OIB: ${offer.client_oib}</div>` : ''}
+      </div>
 
-        ${company.iban ? `
-          <div class="footer">
-            <div>Način plaćanja: transakcijski račun</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 40px;">Br.</th>
+            <th>Naziv</th>
+            <th class="text-center" style="width: 50px;">Jed</th>
+            <th class="text-center" style="width: 60px;">Kol</th>
+            <th class="text-right" style="width: 100px;">Jed cijena</th>
+            <th class="text-right" style="width: 100px;">Ukupno</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+
+      <div class="rekapitulacija">
+        <div class="rekapitulacija-title">REKAPITULACIJA</div>
+        <div class="total-row">
+          <span>Ukupno bez PDV-a:</span>
+          <span>${formatNumber(Number(offer.ukupno))} €</span>
+        </div>
+        <div class="total-row grand-total">
+          <span>SVEUKUPNO:</span>
+          <span>${formatNumber(Number(offer.ukupno))} €</span>
+        </div>
+      </div>
+
+      ${offer.napomena ? `
+        <div class="napomena">
+          <div class="napomena-title">Napomena:</div>
+          <div>${offer.napomena}</div>
+        </div>
+      ` : ''}
+
+      <div class="footer">
+        <div class="footer-left">
+          ${company.iban ? `
+            <div><strong>Način plaćanja:</strong> transakcijski račun</div>
             <div>IBAN: ${company.iban}</div>
+            <div>Poziv na broj: ${offerNumber}</div>
+          ` : ''}
+        </div>
+        <div class="footer-right">
+          <div>Datum: ${format(new Date(offer.created_at), 'dd.MM.yyyy.')}</div>
+          <div class="signature-line">
+            Za ${company.naziv_firme}
           </div>
-        ` : ''}
+        </div>
       </div>
     </body>
     </html>
