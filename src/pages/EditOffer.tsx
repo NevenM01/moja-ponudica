@@ -227,6 +227,21 @@ const EditOffer = () => {
     }));
   };
 
+  const moveItem = (groupId: string, itemId: string, direction: 'up' | 'down') => {
+    setGroups(groups.map(group => {
+      if (group.id !== groupId) return group;
+      const items = [...group.items];
+      const currentIndex = items.findIndex(item => item.id === itemId);
+      if (currentIndex === -1) return group;
+      
+      const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      if (newIndex < 0 || newIndex >= items.length) return group;
+      
+      [items[currentIndex], items[newIndex]] = [items[newIndex], items[currentIndex]];
+      return { ...group, items };
+    }));
+  };
+
   const total = groups.reduce((sum, group) => {
     return sum + group.items
       .filter(item => !item.is_optional)
@@ -406,6 +421,7 @@ const EditOffer = () => {
               onUpdateItem={updateItem}
               onAddItem={addItem}
               onRemoveItem={removeItem}
+              onMoveItem={moveItem}
               total={total}
             />
 

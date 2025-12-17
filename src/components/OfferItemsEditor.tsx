@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, FolderPlus } from 'lucide-react';
+import { Plus, Trash2, FolderPlus, ChevronUp, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export interface OfferItem {
@@ -32,6 +32,7 @@ interface OfferItemsEditorProps {
   onUpdateItem: (groupId: string, itemId: string, field: keyof OfferItem, value: string | number | boolean) => void;
   onAddItem: (groupId: string) => void;
   onRemoveItem: (groupId: string, itemId: string) => void;
+  onMoveItem: (groupId: string, itemId: string, direction: 'up' | 'down') => void;
   total: number;
 }
 
@@ -54,6 +55,7 @@ const OfferItemsEditor = ({
   onUpdateItem,
   onAddItem,
   onRemoveItem,
+  onMoveItem,
   total,
 }: OfferItemsEditorProps) => {
   return (
@@ -103,8 +105,30 @@ const OfferItemsEditor = ({
               </div>
               {group.items.map((item, itemIndex) => (
                 <div key={item.id} className="grid grid-cols-12 gap-2 mb-2 items-center">
-                  <div className="col-span-1">
+                  <div className="col-span-1 flex items-center gap-1">
                     <span className="text-sm font-medium text-muted-foreground">{group.redni_broj}.{itemIndex + 1}</span>
+                    <div className="flex flex-col">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
+                        onClick={() => onMoveItem(group.id, item.id, 'up')}
+                        disabled={itemIndex === 0}
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5"
+                        onClick={() => onMoveItem(group.id, item.id, 'down')}
+                        disabled={itemIndex === group.items.length - 1}
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="col-span-3">
                     <Input
@@ -180,7 +204,31 @@ const OfferItemsEditor = ({
               {group.items.map((item, index) => (
                 <div key={item.id} className="border border-border rounded-lg p-3 bg-muted/30 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Stavka {group.redni_broj}.{index + 1}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-muted-foreground">Stavka {group.redni_broj}.{index + 1}</span>
+                      <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => onMoveItem(group.id, item.id, 'up')}
+                          disabled={index === 0}
+                        >
+                          <ChevronUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => onMoveItem(group.id, item.id, 'down')}
+                          disabled={index === group.items.length - 1}
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
