@@ -110,6 +110,7 @@ const EditOffer = () => {
       const groupedData: OfferGroup[] = existingGroups.map(group => ({
         id: group.id,
         naziv: group.naziv,
+        opis: (group as any).opis || '',
         redni_broj: group.redni_broj,
         items: existingItems
           .filter(item => item.group_id === group.id)
@@ -160,8 +161,8 @@ const EditOffer = () => {
     setFetching(false);
   };
 
-  const updateGroup = (groupId: string, naziv: string) => {
-    setGroups(groups.map(g => g.id === groupId ? { ...g, naziv } : g));
+  const updateGroup = (groupId: string, field: 'naziv' | 'opis', value: string) => {
+    setGroups(groups.map(g => g.id === groupId ? { ...g, [field]: value } : g));
   };
 
   const addGroup = () => {
@@ -299,14 +300,14 @@ const EditOffer = () => {
           // Update existing group
           const { error: updateGroupError } = await supabase
             .from('offer_item_groups')
-            .update({ naziv: group.naziv, redni_broj: group.redni_broj })
+            .update({ naziv: group.naziv, opis: group.opis || null, redni_broj: group.redni_broj })
             .eq('id', group.id);
           if (updateGroupError) throw updateGroupError;
         } else {
           // Insert new group
           const { data: savedGroup, error: insertGroupError } = await supabase
             .from('offer_item_groups')
-            .insert({ offer_id: id, naziv: group.naziv, redni_broj: group.redni_broj })
+            .insert({ offer_id: id, naziv: group.naziv, opis: group.opis || null, redni_broj: group.redni_broj })
             .select()
             .single();
           if (insertGroupError) throw insertGroupError;

@@ -89,6 +89,7 @@ export type Database = {
           id: string
           naziv: string
           offer_id: string
+          opis: string | null
           redni_broj: number
         }
         Insert: {
@@ -96,6 +97,7 @@ export type Database = {
           id?: string
           naziv: string
           offer_id: string
+          opis?: string | null
           redni_broj?: number
         }
         Update: {
@@ -103,6 +105,7 @@ export type Database = {
           id?: string
           naziv?: string
           offer_id?: string
+          opis?: string | null
           redni_broj?: number
         }
         Relationships: [
@@ -174,6 +177,7 @@ export type Database = {
           created_at: string
           id: string
           naziv: string
+          opis: string | null
           redni_broj: number
           template_id: string
         }
@@ -181,6 +185,7 @@ export type Database = {
           created_at?: string
           id?: string
           naziv: string
+          opis?: string | null
           redni_broj?: number
           template_id: string
         }
@@ -188,6 +193,7 @@ export type Database = {
           created_at?: string
           id?: string
           naziv?: string
+          opis?: string | null
           redni_broj?: number
           template_id?: string
         }

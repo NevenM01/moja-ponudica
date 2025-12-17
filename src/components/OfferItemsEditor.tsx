@@ -20,13 +20,14 @@ export interface OfferItem {
 export interface OfferGroup {
   id: string;
   naziv: string;
+  opis?: string;
   redni_broj: number;
   items: OfferItem[];
 }
 
 interface OfferItemsEditorProps {
   groups: OfferGroup[];
-  onUpdateGroup: (groupId: string, naziv: string) => void;
+  onUpdateGroup: (groupId: string, field: 'naziv' | 'opis', value: string) => void;
   onAddGroup: () => void;
   onRemoveGroup: (groupId: string) => void;
   onUpdateItem: (groupId: string, itemId: string, field: keyof OfferItem, value: string | number | boolean) => void;
@@ -75,7 +76,7 @@ const OfferItemsEditor = ({
               <span className="text-lg font-bold text-primary">{group.redni_broj}.</span>
               <Input
                 value={group.naziv}
-                onChange={(e) => onUpdateGroup(group.id, e.target.value)}
+                onChange={(e) => onUpdateGroup(group.id, 'naziv', e.target.value)}
                 placeholder="Naziv grupe (npr. FILTRACIJA I CIRKULACIJA)"
                 className="flex-1 font-semibold"
               />
@@ -90,6 +91,12 @@ const OfferItemsEditor = ({
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
+            <Input
+              value={group.opis || ''}
+              onChange={(e) => onUpdateGroup(group.id, 'opis', e.target.value)}
+              placeholder="Opis grupe (opcionalno)"
+              className="mt-2 text-sm"
+            />
           </CardHeader>
           <CardContent className="p-4 pt-2">
             {/* Desktop table */}
