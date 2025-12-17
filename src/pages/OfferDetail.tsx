@@ -386,26 +386,14 @@ const OfferDetail = () => {
             </div>
           </div>
 
-          {/* Footer with bank info and signature */}
-          <div className="pt-4 border-t border-border flex flex-col md:flex-row justify-between gap-6 text-sm">
-            <div className="text-muted-foreground space-y-1">
-              {companyProfile?.iban && (
-                <>
-                  <p><span className="font-medium">Način plaćanja:</span> transakcijski račun</p>
-                  <p>IBAN: {companyProfile.iban}</p>
-                  <p>Poziv na broj: {offer.offer_number}</p>
-                </>
-              )}
+          {/* Footer with bank info */}
+          {companyProfile?.iban && (
+            <div className="pt-4 border-t border-border text-sm text-muted-foreground space-y-1">
+              <p><span className="font-medium">Način plaćanja:</span> transakcijski račun</p>
+              <p>IBAN: {companyProfile.iban}</p>
+              <p>Poziv na broj: {offer.offer_number}</p>
             </div>
-            <div className="text-right space-y-2">
-              <p className="text-muted-foreground">
-                Datum: {format(new Date(offer.created_at), 'dd.MM.yyyy.')}
-              </p>
-              <div className="mt-8 pt-2 border-t border-foreground/30 w-48 ml-auto">
-                <p className="text-xs text-muted-foreground">Za {companyProfile?.naziv_firme}</p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </AppLayout>
