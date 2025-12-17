@@ -281,6 +281,13 @@ export const generatePDF = (
         ${offer.client_oib ? `<div>OIB: ${offer.client_oib}</div>` : ''}
       </div>
 
+      ${offer.napomena ? `
+        <div class="napomena">
+          <div class="napomena-title">Napomena:</div>
+          <div>${offer.napomena}</div>
+        </div>
+      ` : ''}
+
       <table>
         <thead>
           <tr>
@@ -298,23 +305,11 @@ export const generatePDF = (
       </table>
 
       <div class="rekapitulacija">
-        <div class="rekapitulacija-title">REKAPITULACIJA</div>
-        <div class="total-row">
-          <span>Ukupno bez PDV-a:</span>
-          <span>${formatNumber(Number(offer.ukupno))} €</span>
-        </div>
         <div class="total-row grand-total">
           <span>SVEUKUPNO:</span>
           <span>${formatNumber(Number(offer.ukupno))} €</span>
         </div>
       </div>
-
-      ${offer.napomena ? `
-        <div class="napomena">
-          <div class="napomena-title">Napomena:</div>
-          <div>${offer.napomena}</div>
-        </div>
-      ` : ''}
 
       <div class="footer">
         <div class="footer-left">
