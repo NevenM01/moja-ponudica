@@ -230,6 +230,14 @@ const OfferPreview = () => {
               </div>
             </div>
 
+            {/* Notes - above items */}
+            {offer.napomena && (
+              <div className="mb-6 bg-muted/30 rounded-lg p-4">
+                <p className="text-sm font-medium mb-1">Napomena</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{offer.napomena}</p>
+              </div>
+            )}
+
             {/* Items Table */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
@@ -339,15 +347,10 @@ const OfferPreview = () => {
 
             <Separator className="my-6" />
 
-            {/* REKAPITULACIJA */}
+            {/* Total */}
             <div>
-              <h3 className="font-bold text-sm mb-3 underline">REKAPITULACIJA</h3>
               <div className="flex justify-end">
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between w-56 py-1 border-b">
-                    <span className="text-muted-foreground">Ukupno bez PDV-a:</span>
-                    <span className="font-medium">{formatNumber(calculatedTotal)} €</span>
-                  </div>
                   <div className="flex justify-between w-56 py-2 bg-primary/5 rounded px-2">
                     <span className="font-bold">SVEUKUPNO:</span>
                     <span className="font-bold text-primary">{formatNumber(calculatedTotal)} €</span>
@@ -355,14 +358,6 @@ const OfferPreview = () => {
                 </div>
               </div>
             </div>
-
-            {/* Notes */}
-            {offer.napomena && (
-              <div className="mt-8 bg-muted/30 rounded-lg p-4">
-                <p className="text-sm font-medium mb-1">Napomena</p>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{offer.napomena}</p>
-              </div>
-            )}
 
             {/* Payment Info */}
             {company?.iban && (

@@ -335,6 +335,14 @@ const OfferDetail = () => {
             </div>
           </div>
 
+          {/* Note - above items */}
+          {offer.napomena && (
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">Napomena:</p>
+              <p className="text-sm text-foreground mt-1">{offer.napomena}</p>
+            </div>
+          )}
+
           {/* Items table - Desktop */}
           <div className="hidden md:block">
             <Table>
@@ -365,28 +373,15 @@ const OfferDetail = () => {
             {renderMobileItems()}
           </div>
 
-          {/* REKAPITULACIJA */}
+          {/* Total */}
           <div className="pt-4 border-t-2 border-foreground/20">
-            <h3 className="font-bold text-sm mb-3 underline">REKAPITULACIJA</h3>
             <div className="flex flex-col items-end space-y-2 text-sm">
-              <div className="flex justify-between w-56 py-1 border-b border-border">
-                <span className="text-muted-foreground">Ukupno bez PDV-a:</span>
-                <span className="font-medium text-foreground">{formatNumber(Number(offer.ukupno))} €</span>
-              </div>
               <div className="flex justify-between w-56 py-2 border-t-2 border-b-2 border-foreground/20">
                 <span className="font-bold text-foreground">SVEUKUPNO:</span>
                 <span className="font-bold text-foreground">{formatNumber(Number(offer.ukupno))} €</span>
               </div>
             </div>
           </div>
-
-          {/* Note */}
-          {offer.napomena && (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground">Napomena:</p>
-              <p className="text-sm text-foreground mt-1">{offer.napomena}</p>
-            </div>
-          )}
 
           {/* Footer with bank info and signature */}
           <div className="pt-4 border-t border-border flex flex-col md:flex-row justify-between gap-6 text-sm">
