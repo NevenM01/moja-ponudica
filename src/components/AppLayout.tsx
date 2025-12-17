@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon, Settings, ChevronDown, Shield } from 'lucide-react';
+import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon, Settings, ChevronDown, Shield, Building2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -13,17 +13,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCompanyProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('company_profiles')
+        .select('logo_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data?.logo_url) {
+        setLogoUrl(data.logo_url);
+      }
+    };
+    fetchCompanyProfile();
+  }, [user]);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -60,10 +77,18 @@ const AppLayout = ({ children }: AppLayoutProps) => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border sticky top-0 bg-background z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
-            <FileText className="h-5 w-5 md:h-6 md:w-6" />
-            <span className="hidden sm:inline">MojaPonudica</span>
-            <span className="sm:hidden">Ponudica</span>
+          <Link to="/" className="flex items-center gap-3">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-8 md:h-10 w-auto object-contain" />
+            ) : (
+              <div className="h-8 md:h-10 w-8 md:w-10 rounded bg-muted flex items-center justify-center">
+                <Building2 className="h-4 md:h-5 w-4 md:w-5 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground leading-tight">powered by</span>
+              <span className="text-sm font-semibold text-foreground leading-tight">MojaPonudica</span>
+            </div>
           </Link>
 
           {/* Desktop navigation */}
