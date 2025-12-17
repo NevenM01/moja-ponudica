@@ -79,15 +79,15 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="h-8 md:h-10 w-auto object-contain" />
+              <img src={logoUrl} alt="Logo" className="h-10 md:h-12 w-auto object-contain" />
             ) : (
-              <div className="h-8 md:h-10 w-8 md:w-10 rounded bg-muted flex items-center justify-center">
-                <Building2 className="h-4 md:h-5 w-4 md:w-5 text-muted-foreground" />
+              <div className="h-10 md:h-12 w-10 md:w-12 rounded bg-muted flex items-center justify-center">
+                <Building2 className="h-5 md:h-6 w-5 md:w-6 text-muted-foreground" />
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground leading-tight">powered by</span>
-              <span className="text-sm font-semibold text-foreground leading-tight">MojaPonudica</span>
+              <span className="text-[8px] text-muted-foreground leading-tight">powered by</span>
+              <span className="text-xs font-medium text-foreground leading-tight">MojaPonudica</span>
             </div>
           </Link>
 
