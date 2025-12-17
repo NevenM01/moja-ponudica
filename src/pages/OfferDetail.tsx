@@ -281,10 +281,10 @@ const OfferDetail = () => {
                 <img
                   src={companyProfile.logo_url}
                   alt="Logo"
-                  className="h-16 md:h-20 w-auto object-contain"
+                  className="h-20 md:h-24 w-auto object-contain"
                 />
               ) : (
-                <div className="h-16 md:h-20 w-32 bg-muted rounded flex items-center justify-center text-muted-foreground text-sm">
+                <div className="h-20 md:h-24 w-40 bg-muted rounded flex items-center justify-center text-muted-foreground text-sm">
                   Logo
                 </div>
               )}

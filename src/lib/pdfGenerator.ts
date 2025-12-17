@@ -122,10 +122,10 @@ export const generatePDF = (
           border-bottom: 2px solid #333;
           margin-bottom: 20px;
         }
-        .logo { height: 50px; width: auto; }
+        .logo { height: 80px; width: auto; }
         .logo-placeholder { 
-          height: 50px; 
-          width: 100px; 
+          height: 80px; 
+          width: 160px; 
           background: #f5f5f5; 
           display: flex; 
           align-items: center; 
