@@ -22,6 +22,7 @@ interface OfferItem {
 interface OfferGroup {
   id: string;
   naziv: string;
+  opis?: string;
   redni_broj: number;
 }
 
@@ -63,6 +64,7 @@ export const generatePDF = (
           <tr>
             <td colspan="6" style="padding: 12px 8px 8px; font-weight: bold; font-size: 12px; background: #f5f5f5; border-bottom: 2px solid #333;">
               ${group.redni_broj}. ${group.naziv}
+              ${group.opis ? `<div style="font-weight: normal; font-size: 11px; margin-top: 4px; color: #666;">${group.opis}</div>` : ''}
             </td>
           </tr>
         `;
