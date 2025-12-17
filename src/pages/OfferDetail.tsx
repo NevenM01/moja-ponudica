@@ -37,6 +37,7 @@ interface OfferItem {
 interface OfferGroup {
   id: string;
   naziv: string;
+  opis?: string;
   redni_broj: number;
 }
 
@@ -151,8 +152,9 @@ const OfferDetail = () => {
       return (
         <>
           <TableRow key={`group-${group.id}`} className="bg-muted/50">
-            <TableCell colSpan={6} className="font-bold text-foreground py-3">
-              {group.redni_broj}. {group.naziv}
+            <TableCell colSpan={6} className="py-3">
+              <div className="font-bold text-foreground">{group.redni_broj}. {group.naziv}</div>
+              {group.opis && <div className="text-sm text-muted-foreground mt-1">{group.opis}</div>}
             </TableCell>
           </TableRow>
           {groupItems.map((item) => {
@@ -201,8 +203,9 @@ const OfferDetail = () => {
       const groupItems = items.filter(item => item.group_id === group.id);
       return (
         <div key={group.id}>
-          <div className="bg-muted/50 font-bold py-2 px-2 text-sm">
-            {group.redni_broj}. {group.naziv}
+          <div className="bg-muted/50 py-2 px-2 text-sm">
+            <div className="font-bold">{group.redni_broj}. {group.naziv}</div>
+            {group.opis && <div className="text-muted-foreground mt-1">{group.opis}</div>}
           </div>
           {groupItems.map((item) => {
             const currentIndex = itemCounter++;

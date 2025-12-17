@@ -80,6 +80,17 @@ Deno.serve(async (req) => {
       console.error('Failed to fetch offer items:', itemsError);
     }
 
+    // Fetch offer item groups
+    const { data: groups, error: groupsError } = await supabase
+      .from('offer_item_groups')
+      .select('*')
+      .eq('offer_id', offer.id)
+      .order('redni_broj');
+
+    if (groupsError) {
+      console.error('Failed to fetch offer groups:', groupsError);
+    }
+
     // Fetch company profile
     const { data: company, error: companyError } = await supabase
       .from('company_profiles')
@@ -97,6 +108,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         offer, 
         items: items || [], 
+        groups: groups || [],
         company: company || null 
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
