@@ -337,9 +337,9 @@ const OfferDetail = () => {
 
           {/* Note - above items */}
           {offer.napomena && (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground">Napomena:</p>
-              <p className="text-sm text-foreground mt-1">{offer.napomena}</p>
+            <div className="bg-muted/50 border border-border rounded-lg p-4">
+              <p className="text-sm font-medium text-foreground mb-2">Napomena</p>
+              <p className="text-sm text-foreground whitespace-pre-wrap">{offer.napomena}</p>
             </div>
           )}
 
