@@ -116,8 +116,8 @@ const NewOffer = () => {
     setOfferNumber(`PON-${year}-${String(nextNumber).padStart(4, '0')}`);
   };
 
-  const updateGroup = (groupId: string, naziv: string) => {
-    setGroups(groups.map(g => g.id === groupId ? { ...g, naziv } : g));
+  const updateGroup = (groupId: string, field: 'naziv' | 'opis', value: string) => {
+    setGroups(groups.map(g => g.id === groupId ? { ...g, [field]: value } : g));
   };
 
   const addGroup = () => {
@@ -221,6 +221,7 @@ const NewOffer = () => {
           .insert({
             template_id: template.id,
             naziv: group.naziv,
+            opis: group.opis || null,
             redni_broj: group.redni_broj,
           })
           .select()
@@ -300,6 +301,7 @@ const NewOffer = () => {
           return {
             id: newGroupId,
             naziv: tGroup.naziv,
+            opis: (tGroup as any).opis || '',
             redni_broj: tGroup.redni_broj,
             items: groupItems.length > 0 ? groupItems : [createNewItem(newGroupId)],
           };
@@ -369,6 +371,7 @@ const NewOffer = () => {
           .insert({
             offer_id: offer.id,
             naziv: group.naziv,
+            opis: group.opis || null,
             redni_broj: group.redni_broj,
           })
           .select()
