@@ -206,15 +206,17 @@ export const generatePDF = (
           padding: 12px 0;
         }
         
-        .napomena { 
+.napomena { 
           margin-top: 30px;
           padding: 15px;
           background: #f9f9f9;
           border: 1px solid #ddd;
+          border-radius: 8px;
           font-size: 10px;
+          white-space: pre-wrap;
         }
         .napomena-title {
-          font-weight: bold;
+          font-weight: 500;
           margin-bottom: 8px;
         }
         
@@ -281,12 +283,12 @@ export const generatePDF = (
         ${offer.client_oib ? `<div>OIB: ${offer.client_oib}</div>` : ''}
       </div>
 
-      ${offer.napomena ? `
-        <div class="napomena">
-          <div class="napomena-title">Napomena:</div>
-          <div>${offer.napomena}</div>
-        </div>
-      ` : ''}
+${offer.napomena ? `
+          <div class="napomena">
+            <div class="napomena-title">Napomena</div>
+            <div>${offer.napomena}</div>
+          </div>
+        ` : ''}
 
       <table>
         <thead>
