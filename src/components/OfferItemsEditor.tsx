@@ -93,16 +93,20 @@ const OfferItemsEditor = ({
             {/* Desktop table */}
             <div className="hidden md:block">
               <div className="grid grid-cols-12 gap-2 mb-2 text-xs font-medium text-muted-foreground px-1">
-                <div className="col-span-4">Naziv</div>
+                <div className="col-span-1">Br.</div>
+                <div className="col-span-3">Naziv</div>
                 <div className="col-span-1">Jed</div>
                 <div className="col-span-2">Kol</div>
                 <div className="col-span-2">Jed cijena</div>
                 <div className="col-span-2">Ukupno</div>
                 <div className="col-span-1"></div>
               </div>
-              {group.items.map((item) => (
+              {group.items.map((item, itemIndex) => (
                 <div key={item.id} className="grid grid-cols-12 gap-2 mb-2 items-center">
-                  <div className="col-span-4">
+                  <div className="col-span-1">
+                    <span className="text-sm font-medium text-muted-foreground">{group.redni_broj}.{itemIndex + 1}</span>
+                  </div>
+                  <div className="col-span-3">
                     <Input
                       value={item.opis}
                       onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
@@ -176,7 +180,7 @@ const OfferItemsEditor = ({
               {group.items.map((item, index) => (
                 <div key={item.id} className="border border-border rounded-lg p-3 bg-muted/30 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Stavka {index + 1}</span>
+                    <span className="text-sm font-medium text-muted-foreground">Stavka {group.redni_broj}.{index + 1}</span>
                     <Button
                       type="button"
                       variant="ghost"
