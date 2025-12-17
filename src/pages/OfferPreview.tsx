@@ -176,11 +176,11 @@ const OfferPreview = () => {
                   <img 
                     src={company.logo_url} 
                     alt={company.naziv_firme}
-                    className="h-16 w-16 object-contain rounded-lg bg-background p-1"
+                    className="h-20 w-auto object-contain rounded-lg bg-background p-1"
                   />
                 ) : (
-                  <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Building2 className="h-8 w-8 text-primary" />
+                  <div className="h-20 w-20 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Building2 className="h-10 w-10 text-primary" />
                   </div>
                 )}
                 <div>
