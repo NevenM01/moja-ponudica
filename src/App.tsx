@@ -13,6 +13,7 @@ import OfferList from "./pages/OfferList";
 import NewOffer from "./pages/NewOffer";
 import OfferDetail from "./pages/OfferDetail";
 import EditOffer from "./pages/EditOffer";
+import EditTemplate from "./pages/EditTemplate";
 import OfferPreview from "./pages/OfferPreview";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -72,6 +73,7 @@ const AppRoutes = () => {
       <Route path="/nova-ponuda" element={<ProtectedRoute><NewOffer /></ProtectedRoute>} />
       <Route path="/ponuda/:id" element={<ProtectedRoute><OfferDetail /></ProtectedRoute>} />
       <Route path="/ponuda/:id/uredi" element={<ProtectedRoute><EditOffer /></ProtectedRoute>} />
+      <Route path="/predlozak/:id/uredi" element={<ProtectedRoute><EditTemplate /></ProtectedRoute>} />
       <Route path="/p/:token" element={<OfferPreview />} />
       
       {/* Admin routes */}
