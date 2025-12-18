@@ -56,7 +56,6 @@ export const generatePDF = (
 
   // Generate items HTML, grouped if groups exist
   let itemsHtml = '';
-  let itemCounter = 1;
 
   if (groups && groups.length > 0) {
     groups.sort((a, b) => a.redni_broj - b.redni_broj);
@@ -75,12 +74,12 @@ export const generatePDF = (
           </tr>
         `;
         
-        // Group items
-        groupItems.forEach((item) => {
-          const bgColor = itemCounter % 2 === 0 ? '#fff' : '#fafafa';
+        // Group items with hierarchical numbering
+        groupItems.forEach((item, itemIndex) => {
+          const bgColor = itemIndex % 2 === 0 ? '#fff' : '#fafafa';
           itemsHtml += `
             <tr style="background: ${bgColor}; page-break-inside: avoid;">
-              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${itemCounter}.</td>
+              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${group.redni_broj}.${itemIndex + 1}.</td>
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0;">${item.opis}</td>
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
@@ -88,7 +87,6 @@ export const generatePDF = (
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))} €</td>
             </tr>
           `;
-          itemCounter++;
         });
       }
     });
