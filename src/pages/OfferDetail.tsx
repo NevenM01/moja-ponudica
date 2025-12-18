@@ -104,14 +104,19 @@ const OfferDetail = () => {
   const handleStatusChange = async (newStatus: 'accepted' | 'rejected' | 'pending') => {
     if (!offer) return;
     
-    const updateData: { status: string; accepted_at?: string | null } = {
+    const updateData: { status: string; accepted_at?: string | null; rejected_at?: string | null } = {
       status: newStatus,
     };
     
     if (newStatus === 'accepted') {
       updateData.accepted_at = new Date().toISOString();
+      updateData.rejected_at = null;
+    } else if (newStatus === 'rejected') {
+      updateData.rejected_at = new Date().toISOString();
+      updateData.accepted_at = null;
     } else {
       updateData.accepted_at = null;
+      updateData.rejected_at = null;
     }
 
     const { error } = await supabase

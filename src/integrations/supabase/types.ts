@@ -295,6 +295,7 @@ export type Database = {
           id: string
           napomena: string | null
           offer_number: string
+          rejected_at: string | null
           share_token: string | null
           status: string | null
           ukupno: number
@@ -310,6 +311,7 @@ export type Database = {
           id?: string
           napomena?: string | null
           offer_number: string
+          rejected_at?: string | null
           share_token?: string | null
           status?: string | null
           ukupno?: number
@@ -325,6 +327,7 @@ export type Database = {
           id?: string
           napomena?: string | null
           offer_number?: string
+          rejected_at?: string | null
           share_token?: string | null
           status?: string | null
           ukupno?: number
