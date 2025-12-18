@@ -72,7 +72,7 @@ const AppLayout = ({
     </>;
   return <div className="min-h-screen bg-transparent">
       <header className="border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-50">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-[1900px] mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             {logoUrl ? <img src={logoUrl} alt="Logo" className="h-20 md:h-12 w-auto object-contain" /> : <div className="h-10 md:h-12 w-10 md:w-12 rounded bg-muted flex items-center justify-center">
                 <Building2 className="h-5 md:h-6 w-5 md:w-6 text-muted-foreground" />
@@ -144,7 +144,7 @@ const AppLayout = ({
           </Sheet>
         </div>
       </header>
-      <main className="container mx-auto px-3 py-4 md:py-6">{children}</main>
+      <main className="max-w-[1900px] mx-auto px-4 py-4 md:py-6">{children}</main>
     </div>;
 };
 export default AppLayout;
