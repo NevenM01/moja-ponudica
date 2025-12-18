@@ -61,7 +61,7 @@ const Login = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Lozinka</Label>
-              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
+              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="Lozinka" />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Učitavanje...' : 'Prijavi se'}
