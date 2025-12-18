@@ -1,5 +1,3 @@
-import { format } from 'date-fns';
-
 interface Offer {
   offer_number: string;
   client_naziv: string;
@@ -40,6 +38,14 @@ const formatNumber = (num: number) => {
   return num.toLocaleString('hr-HR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('hr-HR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
+
 export const generatePDF = (
   offer: Offer,
   items: OfferItem[],
@@ -62,7 +68,7 @@ export const generatePDF = (
         // Group header
         itemsHtml += `
           <tr>
-            <td colspan="6" style="padding: 12px 8px 8px; font-weight: bold; font-size: 12px; background: #f5f5f5; border-bottom: 2px solid #333;">
+            <td colspan="6" style="padding: 12px 8px 8px; font-weight: bold; font-size: 12px; background: #f0f4ff; border-bottom: 1px solid #e0e0e0;">
               ${group.redni_broj}. ${group.naziv}
               ${group.opis ? `<div style="font-weight: normal; font-size: 11px; margin-top: 4px; color: #666;">${group.opis}</div>` : ''}
             </td>
@@ -71,14 +77,15 @@ export const generatePDF = (
         
         // Group items
         groupItems.forEach((item) => {
+          const bgColor = itemCounter % 2 === 0 ? '#fff' : '#fafafa';
           itemsHtml += `
-            <tr>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 40px;">${itemCounter}.</td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.opis}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))}</td>
-              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>
+            <tr style="background: ${bgColor};">
+              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${itemCounter}.</td>
+              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0;">${item.opis}</td>
+              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
+              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
+              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))} €</td>
+              <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))} €</td>
             </tr>
           `;
           itemCounter++;
@@ -88,14 +95,15 @@ export const generatePDF = (
   } else {
     // No groups - flat items
     items.forEach((item, index) => {
+      const bgColor = index % 2 === 0 ? '#fff' : '#fafafa';
       itemsHtml += `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 40px;">${index + 1}.</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.opis}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))}</td>
+        <tr style="background: ${bgColor};">
+          <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${index + 1}.</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0;">${item.opis}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 60px;">${Number(item.kolicina)}</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; width: 100px;">${formatNumber(Number(item.cijena))} €</td>
+          <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: right; width: 100px; font-weight: 500;">${formatNumber(Number(item.ukupno))} €</td>
         </tr>
       `;
     });
@@ -110,225 +118,323 @@ export const generatePDF = (
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-          font-family: Arial, sans-serif; 
-          padding: 30px 40px; 
+          font-family: 'Segoe UI', Arial, sans-serif; 
+          padding: 0; 
           color: #333; 
           font-size: 11px;
-          line-height: 1.4;
+          line-height: 1.5;
+          background: #fff;
         }
-        .header { 
-          display: flex; 
-          justify-content: space-between; 
+        
+        .header {
+          background: linear-gradient(135deg, #f0f4ff 0%, #e8efff 100%);
+          padding: 30px 40px;
+          display: flex;
+          justify-content: space-between;
           align-items: flex-start;
-          padding-bottom: 15px;
-          border-bottom: 2px solid #333;
-          margin-bottom: 20px;
         }
-        .logo { height: 80px; width: auto; }
+        
+        .company-section {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+        }
+        
+        .logo { 
+          height: 70px; 
+          width: auto;
+          border-radius: 8px;
+          background: #fff;
+          padding: 4px;
+        }
         .logo-placeholder { 
-          height: 80px; 
-          width: 160px; 
-          background: #f5f5f5; 
+          height: 70px; 
+          width: 70px; 
+          background: rgba(99, 102, 241, 0.1);
+          border-radius: 8px;
           display: flex; 
           align-items: center; 
           justify-content: center; 
-          color: #999;
-          font-size: 12px;
+          color: #6366f1;
+          font-size: 24px;
+          font-weight: bold;
         }
-        .company-info { text-align: right; font-size: 10px; }
-        .company-name { font-weight: bold; font-size: 14px; margin-bottom: 3px; }
+        
+        .company-info {
+          font-size: 11px;
+        }
+        .company-name { 
+          font-weight: 600; 
+          font-size: 16px; 
+          margin-bottom: 4px;
+          color: #1a1a1a;
+        }
+        .company-details {
+          color: #666;
+        }
+        
+        .offer-badge-section {
+          text-align: right;
+        }
+        .offer-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: #6366f1;
+          color: #fff;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 13px;
+        }
+        .offer-date {
+          margin-top: 8px;
+          color: #666;
+          font-size: 11px;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 6px;
+        }
+        
+        .content {
+          padding: 30px 40px;
+        }
+        
+        .client-section {
+          margin-bottom: 24px;
+        }
+        .client-label {
+          color: #666;
+          font-size: 11px;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .client-box {
+          background: #f8f9fa;
+          border-radius: 8px;
+          padding: 16px;
+        }
+        .client-name {
+          font-weight: 500;
+          margin-bottom: 4px;
+        }
+        .client-details {
+          color: #666;
+          font-size: 11px;
+        }
         
         .predmet-section {
-          margin: 20px 0;
+          margin-bottom: 20px;
           font-size: 11px;
         }
         .predmet-row {
           display: flex;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
         }
         .predmet-label {
           font-weight: bold;
           width: 80px;
         }
-        .predmet-value {
-          flex: 1;
+        
+        .napomena {
+          margin-bottom: 24px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          padding: 16px;
+        }
+        .napomena-title {
+          font-weight: 500;
+          margin-bottom: 6px;
+          font-size: 11px;
+        }
+        .napomena-text {
+          color: #666;
+          font-size: 11px;
+          white-space: pre-wrap;
         }
         
-        .client-section {
-          margin: 20px 0;
-          padding: 15px;
-          background: #f9f9f9;
-          border: 1px solid #ddd;
+        .items-section h3 {
+          font-weight: 500;
+          margin-bottom: 16px;
+          font-size: 13px;
         }
-        .client-label { font-weight: bold; margin-bottom: 5px; }
         
         table { 
           width: 100%; 
           border-collapse: collapse; 
-          margin: 20px 0; 
-          font-size: 10px;
+          font-size: 11px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          overflow: hidden;
         }
         thead tr {
-          background: #f0f0f0;
+          background: #f8f9fa;
         }
         th { 
-          padding: 10px 8px; 
+          padding: 12px 8px; 
           text-align: left; 
-          font-weight: bold;
-          font-size: 10px;
-          border-bottom: 2px solid #333;
-          border-top: 2px solid #333;
+          font-weight: 500;
+          font-size: 11px;
+          border-bottom: 1px solid #e0e0e0;
+          color: #333;
         }
         th.text-center { text-align: center; }
         th.text-right { text-align: right; }
         
-        .rekapitulacija {
-          margin-top: 30px;
-          border-top: 2px solid #333;
-          padding-top: 15px;
-        }
-        .rekapitulacija-title {
-          font-weight: bold;
-          font-size: 12px;
-          margin-bottom: 10px;
-          text-decoration: underline;
-        }
-        .total-row {
+        .total-section {
+          margin-top: 24px;
           display: flex;
-          justify-content: space-between;
-          padding: 8px 0;
-          border-bottom: 1px solid #ddd;
+          justify-content: flex-end;
         }
-        .total-row.grand-total {
-          border-top: 2px solid #333;
-          border-bottom: 2px solid #333;
-          font-weight: bold;
-          font-size: 13px;
-          margin-top: 10px;
-          padding: 12px 0;
-        }
-        
-.napomena { 
-          margin-top: 30px;
-          padding: 15px;
-          background: #f9f9f9;
-          border: 1px solid #ddd;
+        .total-box {
+          background: rgba(99, 102, 241, 0.1);
           border-radius: 8px;
-          font-size: 10px;
-          white-space: pre-wrap;
-        }
-        .napomena-title {
-          font-weight: 500;
-          margin-bottom: 8px;
-        }
-        
-        .footer { 
-          margin-top: 40px; 
-          display: flex;
-          justify-content: space-between;
-          font-size: 10px;
-        }
-        .footer-left {
-          max-width: 60%;
-        }
-        .footer-right {
+          padding: 16px 24px;
           text-align: right;
         }
-        .signature-line {
-          margin-top: 40px;
-          border-top: 1px solid #333;
-          width: 200px;
-          text-align: center;
-          padding-top: 5px;
-          font-size: 10px;
+        .total-label {
+          font-size: 11px;
+          color: #666;
+          margin-bottom: 4px;
+        }
+        .total-value {
+          font-size: 20px;
+          font-weight: bold;
+          color: #6366f1;
+        }
+        
+        .footer {
+          margin-top: 30px;
+          padding-top: 16px;
+          border-top: 1px solid #e0e0e0;
+          font-size: 11px;
+          color: #666;
         }
         
         @media print {
-          body { padding: 15px; }
+          body { padding: 0; }
           @page { margin: 15mm; }
+          .header {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .offer-badge, .total-box {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
         }
       </style>
     </head>
     <body>
       <div class="header">
-        <div>
+        <div class="company-section">
           ${company.logo_url 
             ? `<img src="${company.logo_url}" alt="Logo" class="logo" />`
-            : `<div class="logo-placeholder">${company.naziv_firme.substring(0, 10)}</div>`
+            : `<div class="logo-placeholder">${company.naziv_firme.charAt(0)}</div>`
           }
+          <div class="company-info">
+            <div class="company-name">${company.naziv_firme}</div>
+            <div class="company-details">
+              <div>${company.adresa}</div>
+              <div>OIB: ${company.oib}</div>
+            </div>
+          </div>
         </div>
-        <div class="company-info">
-          <div class="company-name">${company.naziv_firme}</div>
-          <div>${company.adresa}</div>
-          <div>OIB: ${company.oib}</div>
-          ${company.telefon ? `<div>Tel: ${company.telefon}</div>` : ''}
-          ${company.email ? `<div>${company.email}</div>` : ''}
-          ${company.iban ? `<div>IBAN: ${company.iban}</div>` : ''}
+        <div class="offer-badge-section">
+          <div class="offer-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Ponuda ${offerNumber}
+          </div>
+          <div class="offer-date">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            ${formatDate(offer.created_at)}
+          </div>
         </div>
       </div>
 
-      <div class="predmet-section">
-        <div class="predmet-row">
-          <span class="predmet-label">PREDMET:</span>
-          <span class="predmet-value"><strong>PONUDA ${offerNumber}</strong></span>
+      <div class="content">
+        <div class="client-section">
+          <div class="client-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Klijent
+          </div>
+          <div class="client-box">
+            <div class="client-name">${offer.client_naziv}</div>
+            <div class="client-details">
+              ${offer.client_oib ? `<div>OIB: ${offer.client_oib}</div>` : ''}
+              ${offer.client_adresa ? `<div>${offer.client_adresa}</div>` : ''}
+            </div>
+          </div>
         </div>
-        <div class="predmet-row">
-          <span class="predmet-label">KLIJENT:</span>
-          <span class="predmet-value">${offer.client_naziv}</span>
+
+        <div class="predmet-section">
+          <div class="predmet-row">
+            <span class="predmet-label">PREDMET:</span>
+            <span><strong>PONUDA ${offerNumber}</strong></span>
+          </div>
+          <div class="predmet-row">
+            <span class="predmet-label">KLIJENT:</span>
+            <span>${offer.client_naziv}</span>
+          </div>
         </div>
-      </div>
 
-      <div class="client-section">
-        <div class="client-label">Podaci o klijentu:</div>
-        <div><strong>${offer.client_naziv}</strong></div>
-        ${offer.client_adresa ? `<div>${offer.client_adresa}</div>` : ''}
-        ${offer.client_oib ? `<div>OIB: ${offer.client_oib}</div>` : ''}
-      </div>
-
-${offer.napomena ? `
+        ${offer.napomena ? `
           <div class="napomena">
             <div class="napomena-title">Napomena</div>
-            <div>${offer.napomena}</div>
+            <div class="napomena-text">${offer.napomena}</div>
           </div>
         ` : ''}
 
-      <table>
-        <thead>
-          <tr>
-            <th class="text-center" style="width: 40px;">Br.</th>
-            <th>Naziv</th>
-            <th class="text-center" style="width: 50px;">Jed</th>
-            <th class="text-center" style="width: 60px;">Kol</th>
-            <th class="text-right" style="width: 100px;">Jed cijena</th>
-            <th class="text-right" style="width: 100px;">Ukupno</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHtml}
-        </tbody>
-      </table>
-
-      <div class="rekapitulacija">
-        <div class="total-row grand-total">
-          <span>SVEUKUPNO:</span>
-          <span>${formatNumber(Number(offer.ukupno))} €</span>
+        <div class="items-section">
+          <h3>Stavke ponude</h3>
+          <table>
+            <thead>
+              <tr>
+                <th class="text-center" style="width: 40px;">Br.</th>
+                <th>Naziv</th>
+                <th class="text-center" style="width: 50px;">Jed</th>
+                <th class="text-center" style="width: 60px;">Kol</th>
+                <th class="text-right" style="width: 100px;">Jed cijena</th>
+                <th class="text-right" style="width: 100px;">Ukupno</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
         </div>
-      </div>
 
-      <div class="footer">
-        <div class="footer-left">
-          ${company.iban ? `
+        <div class="total-section">
+          <div class="total-box">
+            <div class="total-label">Ukupno za platiti</div>
+            <div class="total-value">${formatNumber(Number(offer.ukupno))} €</div>
+          </div>
+        </div>
+
+        ${company.iban ? `
+          <div class="footer">
             <div><strong>Način plaćanja:</strong> transakcijski račun</div>
             <div>IBAN: ${company.iban}</div>
             <div>Poziv na broj: ${offerNumber}</div>
-          ` : ''}
-        </div>
-        <div class="footer-right">
-          <div>Datum: ${format(new Date(offer.created_at), 'dd.MM.yyyy.')}</div>
-          <div class="signature-line">
-            Za ${company.naziv_firme}
           </div>
-        </div>
+        ` : ''}
       </div>
     </body>
     </html>
