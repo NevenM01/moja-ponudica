@@ -57,6 +57,26 @@ const Login = () => {
     }
     setResetLoading(true);
     try {
+      // Check if user exists first
+      const { data: checkData, error: checkError } = await supabase.functions.invoke('check-user-exists', {
+        body: { email }
+      });
+
+      if (checkError) {
+        console.error('Error checking user:', checkError);
+        throw new Error('Greška pri provjeri korisnika');
+      }
+
+      if (!checkData.exists) {
+        toast({
+          title: 'Greška',
+          description: 'Korisnik s ovim emailom nije registriran u sustavu',
+          variant: 'destructive'
+        });
+        setResetLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/postavi-lozinku`
       });
