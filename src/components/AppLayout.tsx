@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useTenant } from '@/hooks/useTenant';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon, Settings, ChevronDown, Shield, Building2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
+
 interface AppLayoutProps {
   children: React.ReactNode;
 }
+
 const AppLayout = ({
   children
 }: AppLayoutProps) => {
@@ -21,6 +24,7 @@ const AppLayout = ({
   const {
     isAdmin
   } = useAdmin();
+  const { tenant } = useTenant();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const {
@@ -28,6 +32,7 @@ const AppLayout = ({
     setTheme
   } = useTheme();
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchCompanyProfile = async () => {
       if (!user) return;
@@ -74,12 +79,22 @@ const AppLayout = ({
       <header className="border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-50">
         <div className="max-w-[1900px] mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            {logoUrl ? <img src={logoUrl} alt="Logo" className="h-20 md:h-20 w-20 object-contain" /> : <div className="h-10 md:h-12 w-10 md:w-12 rounded bg-muted flex items-center justify-center">
+            {tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.naziv} className="h-10 md:h-12 w-auto object-contain" />
+            ) : logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-20 md:h-20 w-20 object-contain" />
+            ) : (
+              <div className="h-10 md:h-12 w-10 md:w-12 rounded bg-muted flex items-center justify-center">
                 <Building2 className="h-5 md:h-6 w-5 md:w-6 text-muted-foreground" />
-              </div>}
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-[8px] text-muted-foreground leading-tight">powered by</span>
-              <span className="text-xs font-medium text-foreground leading-tight">MojaPonudica</span>
+              <span className="text-sm md:text-base font-semibold text-foreground leading-tight">
+                {tenant?.naziv || 'MojaPonudica'}
+              </span>
+              {tenant && (
+                <span className="text-[8px] text-muted-foreground leading-tight">powered by MojaPonudica</span>
+              )}
             </div>
           </Link>
 
