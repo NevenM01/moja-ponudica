@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, TrendingUp, Plus, X, StickyNote } from 'lucide-react';
+import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 
 interface Note {
@@ -27,6 +27,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -48,14 +50,16 @@ const Dashboard = () => {
   };
 
   const loadNotes = () => {
-    const saved = localStorage.getItem(`notes_${user?.id}`);
+    if (!user?.id) return;
+    const saved = localStorage.getItem(`notes_${user.id}`);
     if (saved) {
       setNotes(JSON.parse(saved));
     }
   };
 
   const saveNotes = (newNotes: Note[]) => {
-    localStorage.setItem(`notes_${user?.id}`, JSON.stringify(newNotes));
+    if (!user?.id) return;
+    localStorage.setItem(`notes_${user.id}`, JSON.stringify(newNotes));
     setNotes(newNotes);
   };
 
@@ -72,6 +76,26 @@ const Dashboard = () => {
 
   const deleteNote = (id: string) => {
     saveNotes(notes.filter(n => n.id !== id));
+  };
+
+  const startEdit = (note: Note) => {
+    setEditingId(note.id);
+    setEditText(note.text);
+  };
+
+  const saveEdit = () => {
+    if (!editingId || !editText.trim()) return;
+    const updatedNotes = notes.map(n => 
+      n.id === editingId ? { ...n, text: editText } : n
+    );
+    saveNotes(updatedNotes);
+    setEditingId(null);
+    setEditText('');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditText('');
   };
 
   return (
@@ -146,15 +170,50 @@ const Dashboard = () => {
                 {notes.map((note) => (
                   <div
                     key={note.id}
-                    className={`${note.color} border rounded-lg p-3 relative group`}
+                    className={`${note.color} border rounded-lg p-3 relative group min-h-[80px]`}
                   >
-                    <button
-                      onClick={() => deleteNote(note.id)}
-                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-background/50 rounded"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                    <p className="text-sm text-foreground pr-4">{note.text}</p>
+                    {editingId === note.id ? (
+                      <div className="space-y-2">
+                        <Input
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveEdit();
+                            if (e.key === 'Escape') cancelEdit();
+                          }}
+                          autoFocus
+                          className="text-sm"
+                        />
+                        <div className="flex gap-1">
+                          <Button size="sm" onClick={saveEdit} className="h-7 px-2">
+                            <Check className="h-3 w-3 mr-1" />
+                            Spremi
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={cancelEdit} className="h-7 px-2">
+                            <X className="h-3 w-3 mr-1" />
+                            Odustani
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                          <button
+                            onClick={() => startEdit(note)}
+                            className="p-1 hover:bg-background/50 rounded"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={() => deleteNote(note.id)}
+                            className="p-1 hover:bg-background/50 rounded text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <p className="text-sm text-foreground pr-8">{note.text}</p>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
