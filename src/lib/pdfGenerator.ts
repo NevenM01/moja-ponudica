@@ -341,6 +341,11 @@ export const generatePDF = (
             page-break-inside: auto;
           }
           
+          /* Stavke ponude uvijek počinju na novoj stranici */
+          .items-section {
+            page-break-before: always;
+          }
+          
           .header {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
