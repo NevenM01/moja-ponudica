@@ -155,18 +155,24 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
-    background-image: 
-      radial-gradient(circle at 15% 85%, hsl(200 80% 60% / 0.1) 0%, transparent 40%),
-      radial-gradient(circle at 85% 15%, hsl(190 90% 50% / 0.08) 0%, transparent 45%),
-      radial-gradient(circle at 50% 50%, hsl(210 70% 55% / 0.06) 0%, transparent 35%),
-      url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3CradialGradient id='bubble' cx='30%25' cy='30%25'%3E%3Cstop offset='0%25' stop-color='%23fff' stop-opacity='0.35'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4' stop-opacity='0.08'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='30' cy='35' r='12' fill='url(%23bubble)' stroke='%2306b6d4' stroke-opacity='0.12' stroke-width='1'/%3E%3Ccircle cx='150' cy='60' r='8' fill='url(%23bubble)' stroke='%230ea5e9' stroke-opacity='0.1' stroke-width='0.8'/%3E%3Ccircle cx='80' cy='150' r='15' fill='url(%23bubble)' stroke='%2306b6d4' stroke-opacity='0.08' stroke-width='1'/%3E%3Ccircle cx='170' cy='160' r='10' fill='url(%23bubble)' stroke='%230ea5e9' stroke-opacity='0.1' stroke-width='0.8'/%3E%3Ccircle cx='120' cy='25' r='6' fill='url(%23bubble)' stroke='%2306b6d4' stroke-opacity='0.08' stroke-width='0.6'/%3E%3C/svg%3E");
-    background-attachment: fixed;
+    @apply text-foreground;
     min-height: 100vh;
   }
 }
 
-.dark body {
+/* Background outside @layer for proper specificity */
+body {
+  background-color: hsl(var(--background));
+  background-image: 
+    radial-gradient(circle at 15% 85%, hsl(200 80% 60% / 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 85% 15%, hsl(190 90% 50% / 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, hsl(210 70% 55% / 0.06) 0%, transparent 35%),
+    url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3CradialGradient id='bubble' cx='30%25' cy='30%25'%3E%3Cstop offset='0%25' stop-color='%23fff' stop-opacity='0.35'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4' stop-opacity='0.08'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='30' cy='35' r='12' fill='url(%23bubble)' stroke='%2306b6d4' stroke-opacity='0.12' stroke-width='1'/%3E%3Ccircle cx='150' cy='60' r='8' fill='url(%23bubble)' stroke='%230ea5e9' stroke-opacity='0.1' stroke-width='0.8'/%3E%3Ccircle cx='80' cy='150' r='15' fill='url(%23bubble)' stroke='%2306b6d4' stroke-opacity='0.08' stroke-width='1'/%3E%3Ccircle cx='170' cy='160' r='10' fill='url(%23bubble)' stroke='%230ea5e9' stroke-opacity='0.1' stroke-width='0.8'/%3E%3Ccircle cx='120' cy='25' r='6' fill='url(%23bubble)' stroke='%2306b6d4' stroke-opacity='0.08' stroke-width='0.6'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+html.dark body {
+  background-color: hsl(var(--background));
   background-image: 
     radial-gradient(circle at 15% 85%, hsl(200 80% 40% / 0.12) 0%, transparent 40%),
     radial-gradient(circle at 85% 15%, hsl(190 90% 35% / 0.1) 0%, transparent 45%),
