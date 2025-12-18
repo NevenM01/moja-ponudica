@@ -12,6 +12,7 @@ interface Note {
   id: string;
   text: string;
   color: string;
+  createdAt: string;
 }
 
 const COLORS = [
@@ -74,11 +75,12 @@ const Dashboard = () => {
 
   const addNote = () => {
     if (!newNote.trim()) return;
-    const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const blueColor = COLORS[1]; // Always use blue color
     const note: Note = {
       id: crypto.randomUUID(),
       text: newNote,
-      color: randomColor.class,
+      color: blueColor.class,
+      createdAt: new Date().toISOString(),
     };
     saveNotes([...notes, note]);
     setNewNote('');
@@ -282,6 +284,11 @@ const Dashboard = () => {
                           </button>
                         </div>
                         <p className="text-sm text-foreground/90 leading-relaxed pr-12 break-words overflow-hidden font-medium">{note.text}</p>
+                        {note.createdAt && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {new Date(note.createdAt).toLocaleDateString('hr-HR')}
+                          </p>
+                        )}
                       </>
                     )}
                   </div>
