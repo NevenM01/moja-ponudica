@@ -1,20 +1,37 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Plus, TrendingUp } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { FileText, TrendingUp, Plus, X, StickyNote } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+
+interface Note {
+  id: string;
+  text: string;
+  color: string;
+}
+
+const COLORS = [
+  'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700',
+  'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700',
+  'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700',
+  'bg-pink-100 dark:bg-pink-900/30 border-pink-300 dark:border-pink-700',
+  'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700',
+];
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [offerCount, setOfferCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [newNote, setNewNote] = useState('');
 
   useEffect(() => {
     if (user) {
       fetchStats();
+      loadNotes();
     }
   }, [user]);
 
@@ -28,6 +45,33 @@ const Dashboard = () => {
       setOfferCount(count || 0);
     }
     setLoading(false);
+  };
+
+  const loadNotes = () => {
+    const saved = localStorage.getItem(`notes_${user?.id}`);
+    if (saved) {
+      setNotes(JSON.parse(saved));
+    }
+  };
+
+  const saveNotes = (newNotes: Note[]) => {
+    localStorage.setItem(`notes_${user?.id}`, JSON.stringify(newNotes));
+    setNotes(newNotes);
+  };
+
+  const addNote = () => {
+    if (!newNote.trim()) return;
+    const note: Note = {
+      id: crypto.randomUUID(),
+      text: newNote,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    };
+    saveNotes([...notes, note]);
+    setNewNote('');
+  };
+
+  const deleteNote = (id: string) => {
+    saveNotes(notes.filter(n => n.id !== id));
   };
 
   return (
@@ -75,21 +119,46 @@ const Dashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Brze akcije</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Bilješke
+            </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            <Link to="/nova-ponuda">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova ponuda
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Dodaj novu bilješku..."
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addNote()}
+              />
+              <Button onClick={addNote} size="icon">
+                <Plus className="h-4 w-4" />
               </Button>
-            </Link>
-            <Link to="/ponude">
-              <Button variant="outline">
-                <FileText className="h-4 w-4 mr-2" />
-                Pregledaj ponude
-              </Button>
-            </Link>
+            </div>
+            
+            {notes.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nema bilješki. Dodajte prvu!
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {notes.map((note) => (
+                  <div
+                    key={note.id}
+                    className={`${note.color} border rounded-lg p-3 relative group`}
+                  >
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-background/50 rounded"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                    <p className="text-sm text-foreground pr-4">{note.text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
