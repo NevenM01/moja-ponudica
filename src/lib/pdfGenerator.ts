@@ -316,6 +316,11 @@ export const generatePDF = (
           @page { margin: 0; size: A4; }
           body { padding: 15mm; }
           
+          /* Stavke ponude na novoj stranici s gornjim razmakom */
+          .items-section {
+            padding-top: 15mm;
+          }
+          
           /* Spriječi prijelom unutar redova tablice */
           tr {
             page-break-inside: avoid !important;
