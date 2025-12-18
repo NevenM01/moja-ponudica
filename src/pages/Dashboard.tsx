@@ -14,11 +14,11 @@ interface Note {
 }
 
 const COLORS = [
-  'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700',
-  'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700',
-  'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700',
-  'bg-pink-100 dark:bg-pink-900/30 border-pink-300 dark:border-pink-700',
-  'bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700',
+  'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/30 border-amber-200/50 dark:border-amber-700/50 shadow-amber-100/50 dark:shadow-amber-900/20',
+  'bg-gradient-to-br from-sky-50 to-blue-100 dark:from-sky-900/20 dark:to-blue-900/30 border-sky-200/50 dark:border-sky-700/50 shadow-sky-100/50 dark:shadow-sky-900/20',
+  'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/30 border-emerald-200/50 dark:border-emerald-700/50 shadow-emerald-100/50 dark:shadow-emerald-900/20',
+  'bg-gradient-to-br from-rose-50 to-pink-100 dark:from-rose-900/20 dark:to-pink-900/30 border-rose-200/50 dark:border-rose-700/50 shadow-rose-100/50 dark:shadow-rose-900/20',
+  'bg-gradient-to-br from-violet-50 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/30 border-violet-200/50 dark:border-violet-700/50 shadow-violet-100/50 dark:shadow-violet-900/20',
 ];
 
 const Dashboard = () => {
@@ -166,14 +166,14 @@ const Dashboard = () => {
                 Nema bilješki. Dodajte prvu!
               </p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {notes.map((note) => (
                   <div
                     key={note.id}
-                    className={`${note.color} border rounded-lg p-3 relative group min-h-[80px] overflow-hidden`}
+                    className={`${note.color} border rounded-xl p-4 relative group min-h-[100px] overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5`}
                   >
                     {editingId === note.id ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Input
                           value={editText}
                           onChange={(e) => setEditText(e.target.value)}
@@ -182,36 +182,36 @@ const Dashboard = () => {
                             if (e.key === 'Escape') cancelEdit();
                           }}
                           autoFocus
-                          className="text-sm"
+                          className="text-sm bg-background/80 backdrop-blur-sm"
                         />
-                        <div className="flex gap-1">
-                          <Button size="sm" onClick={saveEdit} className="h-7 px-2">
-                            <Check className="h-3 w-3 mr-1" />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={saveEdit} className="h-8 px-3">
+                            <Check className="h-3.5 w-3.5 mr-1.5" />
                             Spremi
                           </Button>
-                          <Button size="sm" variant="outline" onClick={cancelEdit} className="h-7 px-2">
-                            <X className="h-3 w-3 mr-1" />
+                          <Button size="sm" variant="outline" onClick={cancelEdit} className="h-8 px-3 bg-background/50">
+                            <X className="h-3.5 w-3.5 mr-1.5" />
                             Odustani
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200 flex gap-1">
                           <button
                             onClick={() => startEdit(note)}
-                            className="p-1.5 hover:bg-background/50 rounded"
+                            className="p-2 hover:bg-background/60 rounded-lg backdrop-blur-sm transition-colors"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                           </button>
                           <button
                             onClick={() => deleteNote(note.id)}
-                            className="p-1.5 hover:bg-background/50 rounded text-destructive"
+                            className="p-2 hover:bg-destructive/10 rounded-lg backdrop-blur-sm transition-colors"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 text-destructive/70 hover:text-destructive" />
                           </button>
                         </div>
-                        <p className="text-sm text-foreground pr-10 break-words overflow-hidden">{note.text}</p>
+                        <p className="text-sm text-foreground/90 leading-relaxed pr-12 break-words overflow-hidden font-medium">{note.text}</p>
                       </>
                     )}
                   </div>
