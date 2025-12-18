@@ -5,7 +5,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Eye, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Plus, Eye, Trash2, CheckCircle, XCircle, Clock, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
@@ -36,6 +37,15 @@ const OfferList = () => {
   const { toast } = useToast();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredOffers = offers.filter((offer) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      offer.client_naziv.toLowerCase().includes(query) ||
+      offer.offer_number.toLowerCase().includes(query)
+    );
+  });
 
   useEffect(() => {
     if (user) {
@@ -82,12 +92,27 @@ const OfferList = () => {
             </Button>
           </Link>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {offers.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Pretraži po klijentu ili broju ponude..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          )}
           {loading ? (
             <p className="text-muted-foreground">Učitavanje...</p>
           ) : offers.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
               Nemate ponuda. Kreirajte prvu ponudu!
+            </p>
+          ) : filteredOffers.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              Nema rezultata za "{searchQuery}"
             </p>
           ) : (
             <>
@@ -105,7 +130,7 @@ const OfferList = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {offers.map((offer) => (
+                    {filteredOffers.map((offer) => (
                       <TableRow key={offer.id}>
                         <TableCell className="font-medium">{offer.offer_number}</TableCell>
                         <TableCell>{offer.client_naziv}</TableCell>
@@ -136,7 +161,7 @@ const OfferList = () => {
 
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
-                {offers.map((offer) => (
+                {filteredOffers.map((offer) => (
                   <div
                     key={offer.id}
                     className="border border-border rounded-lg p-4 bg-card"
