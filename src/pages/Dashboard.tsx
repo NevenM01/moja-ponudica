@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X, Palette } from 'lucide-react';
+import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X, Palette, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/components/AppLayout';
 
@@ -26,6 +26,9 @@ const COLORS = [
 const Dashboard = () => {
   const { user } = useAuth();
   const [offerCount, setOfferCount] = useState<number | null>(null);
+  const [acceptedCount, setAcceptedCount] = useState<number | null>(null);
+  const [rejectedCount, setRejectedCount] = useState<number | null>(null);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
@@ -40,14 +43,18 @@ const Dashboard = () => {
   }, [user]);
 
   const fetchStats = async () => {
-    const { count, error } = await supabase
-      .from('offers')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user?.id);
+    const [totalResult, acceptedResult, rejectedResult, pendingResult] = await Promise.all([
+      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
+      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).eq('status', 'accepted'),
+      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).eq('status', 'rejected'),
+      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).or('status.eq.pending,status.is.null'),
+    ]);
 
-    if (!error) {
-      setOfferCount(count || 0);
-    }
+    if (!totalResult.error) setOfferCount(totalResult.count || 0);
+    if (!acceptedResult.error) setAcceptedCount(acceptedResult.count || 0);
+    if (!rejectedResult.error) setRejectedCount(rejectedResult.count || 0);
+    if (!pendingResult.error) setPendingCount(pendingResult.count || 0);
+    
     setLoading(false);
   };
 
@@ -134,18 +141,53 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Placeholder za buduće analitike */}
-          <Card className="opacity-50">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Ukupna vrijednost
+                Prihvaćene
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">—</div>
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                {loading ? '...' : acceptedCount}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Uskoro dostupno
+                Prihvaćenih ponuda
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Odbijene
+              </CardTitle>
+              <XCircle className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-red-600 dark:text-red-400">
+                {loading ? '...' : rejectedCount}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Odbijenih ponuda
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Na čekanju
+              </CardTitle>
+              <Clock className="h-4 w-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                {loading ? '...' : pendingCount}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Ponuda na čekanju
               </p>
             </CardContent>
           </Card>

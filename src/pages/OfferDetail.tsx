@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Download, Pencil, Link2, Check, FileText, Building2, User, Calendar } from 'lucide-react';
+import { ArrowLeft, Download, Pencil, Link2, Check, FileText, Building2, User, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { generatePDF } from '@/lib/pdfGenerator';
 import { toast } from 'sonner';
@@ -101,18 +101,52 @@ const OfferDetail = () => {
     setTimeout(() => setLinkCopied(false), 2000);
   };
 
+  const handleStatusChange = async (newStatus: 'accepted' | 'rejected' | 'pending') => {
+    if (!offer) return;
+    
+    const updateData: { status: string; accepted_at?: string | null } = {
+      status: newStatus,
+    };
+    
+    if (newStatus === 'accepted') {
+      updateData.accepted_at = new Date().toISOString();
+    } else {
+      updateData.accepted_at = null;
+    }
+
+    const { error } = await supabase
+      .from('offers')
+      .update(updateData)
+      .eq('id', offer.id);
+
+    if (error) {
+      toast.error('Greška pri promjeni statusa');
+    } else {
+      setOffer({ ...offer, status: newStatus });
+      toast.success(`Status promijenjen u: ${newStatus === 'accepted' ? 'Prihvaćeno' : newStatus === 'rejected' ? 'Odbijeno' : 'Na čekanju'}`);
+    }
+  };
+
   const getStatusBadge = () => {
-    if (!offer?.status || offer.status === 'pending') return null;
+    if (!offer?.status || offer.status === 'pending') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400">
+          <Clock className="h-3 w-3" />
+          Na čekanju
+        </span>
+      );
+    }
     if (offer.status === 'accepted') {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-700 dark:text-green-400">
-          <Check className="h-3 w-3" />
+          <CheckCircle className="h-3 w-3" />
           Prihvaćeno
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-700 dark:text-red-400">
+      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-700 dark:text-red-400">
+        <XCircle className="h-3 w-3" />
         Odbijeno
       </span>
     );
@@ -259,8 +293,40 @@ const OfferDetail = () => {
               Natrag
             </Button>
           </Link>
-          <div className="flex gap-2 w-full sm:w-auto flex-wrap">
+          <div className="flex gap-2 w-full sm:w-auto flex-wrap items-center">
             {getStatusBadge()}
+            
+            {/* Status change buttons */}
+            <div className="flex gap-1 border rounded-lg p-1 bg-muted/30">
+              <Button 
+                variant={offer.status === 'accepted' ? 'default' : 'ghost'} 
+                size="sm" 
+                className={`h-7 px-2 ${offer.status === 'accepted' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                onClick={() => handleStatusChange('accepted')}
+              >
+                <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                Prihvati
+              </Button>
+              <Button 
+                variant={offer.status === 'rejected' ? 'default' : 'ghost'} 
+                size="sm" 
+                className={`h-7 px-2 ${offer.status === 'rejected' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                onClick={() => handleStatusChange('rejected')}
+              >
+                <XCircle className="h-3.5 w-3.5 mr-1" />
+                Odbij
+              </Button>
+              <Button 
+                variant={(!offer.status || offer.status === 'pending') ? 'default' : 'ghost'} 
+                size="sm" 
+                className={`h-7 px-2 ${(!offer.status || offer.status === 'pending') ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
+                onClick={() => handleStatusChange('pending')}
+              >
+                <Clock className="h-3.5 w-3.5 mr-1" />
+                Čekaj
+              </Button>
+            </div>
+
             <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none">
               {linkCopied ? <Check className="h-4 w-4 mr-1 sm:mr-2" /> : <Link2 className="h-4 w-4 mr-1 sm:mr-2" />}
               {linkCopied ? 'Kopirano' : 'Link'}
