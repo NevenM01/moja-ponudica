@@ -313,8 +313,8 @@ export const generatePDF = (
         }
         
         @media print {
-          body { padding: 0; }
-          @page { margin: 15mm; }
+          @page { margin: 0; size: A4; }
+          body { padding: 15mm; }
           
           /* Spriječi prijelom unutar redova tablice */
           tr {
