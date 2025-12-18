@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { TenantProvider } from "@/hooks/useTenant";
 import { useAdmin } from "@/hooks/useAdmin";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -94,7 +95,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <TenantProvider>
+              <AppRoutes />
+            </TenantProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
