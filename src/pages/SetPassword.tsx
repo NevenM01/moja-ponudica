@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Eye, EyeOff } from 'lucide-react';
-
 const SetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,114 +16,106 @@ const SetPassword = () => {
   const [isValidSession, setIsValidSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       if (session?.user) {
         setIsValidSession(true);
       } else {
         toast({
           title: 'Nevažeća sesija',
           description: 'Molimo koristite link iz pozivnice.',
-          variant: 'destructive',
+          variant: 'destructive'
         });
         navigate('/login');
       }
       setCheckingSession(false);
     };
-
     checkSession();
   }, [navigate, toast]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (password.length < 6) {
       toast({
         title: 'Greška',
         description: 'Lozinka mora imati najmanje 6 znakova.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
-
     if (password !== confirmPassword) {
       toast({
         title: 'Greška',
         description: 'Lozinke se ne podudaraju.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
-
     setLoading(true);
-
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password,
+      const {
+        error: updateError
+      } = await supabase.auth.updateUser({
+        password: password
       });
-
       if (updateError) throw updateError;
 
       // Get current user to update invitation status
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       console.log('SetPassword - Current user:', user?.email);
-      
       if (user?.email) {
         // Update invitation status to accepted
-        const { error: inviteError, data: inviteData } = await supabase
-          .from('invitations')
-          .update({ 
-            status: 'accepted', 
-            accepted_at: new Date().toISOString() 
-          })
-          .eq('email', user.email)
-          .eq('status', 'pending')
-          .select();
-        
-        console.log('SetPassword - Invitation update result:', { inviteData, inviteError });
-        
+        const {
+          error: inviteError,
+          data: inviteData
+        } = await supabase.from('invitations').update({
+          status: 'accepted',
+          accepted_at: new Date().toISOString()
+        }).eq('email', user.email).eq('status', 'pending').select();
+        console.log('SetPassword - Invitation update result:', {
+          inviteData,
+          inviteError
+        });
         if (inviteError) {
           console.error('SetPassword - Error updating invitation:', inviteError);
         }
       }
-
       toast({
         title: 'Uspješno!',
-        description: 'Lozinka je postavljena. Molimo popunite profil vaše firme.',
+        description: 'Lozinka je postavljena. Molimo popunite profil vaše firme.'
       });
-
       navigate('/profil');
     } catch (error: any) {
       console.error('Error setting password:', error);
       toast({
         title: 'Greška',
         description: error.message || 'Došlo je do greške pri postavljanju lozinke.',
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
     }
   };
-
   if (checkingSession) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+    return <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Učitavanje...</p>
-      </div>
-    );
+      </div>;
   }
-
   if (!isValidSession) {
     return null;
   }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
@@ -140,27 +131,9 @@ const SetPassword = () => {
             <div className="space-y-2">
               <Label htmlFor="password">Nova lozinka</Label>
               <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Unesite lozinku (min. 6 znakova)"
-                  required
-                  minLength={6}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
+                <Input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required minLength={6} placeholder="Unesite lozinku (min. 8 znakova)" />
+                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                 </Button>
               </div>
             </div>
@@ -168,27 +141,9 @@ const SetPassword = () => {
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
               <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Ponovite lozinku"
-                  required
-                  minLength={6}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
+                <Input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Ponovite lozinku" required minLength={6} />
+                <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                 </Button>
               </div>
             </div>
@@ -199,8 +154,6 @@ const SetPassword = () => {
           </form>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default SetPassword;
