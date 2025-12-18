@@ -170,7 +170,7 @@ const Dashboard = () => {
                 {notes.map((note) => (
                   <div
                     key={note.id}
-                    className={`${note.color} border rounded-lg p-3 relative group min-h-[80px]`}
+                    className={`${note.color} border rounded-lg p-3 relative group min-h-[80px] overflow-hidden`}
                   >
                     {editingId === note.id ? (
                       <div className="space-y-2">
@@ -200,18 +200,18 @@ const Dashboard = () => {
                         <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                           <button
                             onClick={() => startEdit(note)}
-                            className="p-1 hover:bg-background/50 rounded"
+                            className="p-1.5 hover:bg-background/50 rounded"
                           >
-                            <Pencil className="h-3 w-3" />
+                            <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => deleteNote(note.id)}
-                            className="p-1 hover:bg-background/50 rounded text-destructive"
+                            className="p-1.5 hover:bg-background/50 rounded text-destructive"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                        <p className="text-sm text-foreground pr-8">{note.text}</p>
+                        <p className="text-sm text-foreground pr-10 break-words overflow-hidden">{note.text}</p>
                       </>
                     )}
                   </div>
