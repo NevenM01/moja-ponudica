@@ -47,7 +47,8 @@ Deno.serve(async (req) => {
         .from('offers')
         .update({ 
           status: action === 'accept' ? 'accepted' : 'rejected',
-          accepted_at: action === 'accept' ? new Date().toISOString() : null
+          accepted_at: action === 'accept' ? new Date().toISOString() : null,
+          rejected_at: action === 'reject' ? new Date().toISOString() : null
         })
         .eq('share_token', token);
 
@@ -68,6 +69,7 @@ Deno.serve(async (req) => {
 
       offer.status = updatedOffer?.status;
       offer.accepted_at = updatedOffer?.accepted_at;
+      offer.rejected_at = updatedOffer?.rejected_at;
     }
 
     // Fetch offer items
