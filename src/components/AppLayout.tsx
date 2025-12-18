@@ -144,7 +144,7 @@ const AppLayout = ({
           </Sheet>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-4 md:py-6">{children}</main>
+      <main className="container mx-auto px-3 py-4 md:py-6">{children}</main>
     </div>;
 };
 export default AppLayout;

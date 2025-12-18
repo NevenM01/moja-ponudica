@@ -233,7 +233,7 @@ const Profile = () => {
     }
   };
   return <AppLayout>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>Profil tvrtke</CardTitle>
