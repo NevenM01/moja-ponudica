@@ -405,7 +405,7 @@ const NewOffer = () => {
 
   return (
     <AppLayout>
-      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 max-w-6xl mx-auto">
         <CompanyInfoBox profile={companyProfile} />
 
         <Card>

@@ -369,7 +369,7 @@ const EditOffer = () => {
 
   return (
     <AppLayout>
-      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 max-w-6xl mx-auto">
         <div className="flex items-center gap-4">
           <Link to={`/ponuda/${id}`}>
             <Button type="button" variant="ghost" size="sm">
