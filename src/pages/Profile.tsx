@@ -194,7 +194,6 @@ const Profile = () => {
   };
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!currentPassword) {
       toast({
         title: 'Greška',
@@ -203,7 +202,6 @@ const Profile = () => {
       });
       return;
     }
-    
     if (newPassword.length < 6) {
       toast({
         title: 'Greška',
@@ -220,15 +218,15 @@ const Profile = () => {
       });
       return;
     }
-    
     setPasswordLoading(true);
     try {
       // Verify current password by re-authenticating
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const {
+        error: signInError
+      } = await supabase.auth.signInWithPassword({
         email: user?.email || '',
         password: currentPassword
       });
-      
       if (signInError) {
         toast({
           title: 'Greška',
@@ -237,13 +235,14 @@ const Profile = () => {
         });
         return;
       }
-      
+
       // Update to new password
-      const { error } = await supabase.auth.updateUser({
+      const {
+        error
+      } = await supabase.auth.updateUser({
         password: newPassword
       });
       if (error) throw error;
-      
       toast({
         title: 'Lozinka uspješno promijenjena!'
       });
@@ -352,7 +351,7 @@ const Profile = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new_password">Nova lozinka</Label>
-                  <Input id="new_password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required placeholder="Minimalno 6 znakova" />
+                  <Input id="new_password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required placeholder="Minimalno 8 znakova" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm_password">Potvrdi lozinku</Label>
