@@ -31,6 +31,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -193,10 +194,20 @@ const Profile = () => {
   };
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentPassword) {
+      toast({
+        title: 'Greška',
+        description: 'Unesite trenutnu lozinku',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     if (newPassword.length < 6) {
       toast({
         title: 'Greška',
-        description: 'Lozinka mora imati najmanje 6 znakova',
+        description: 'Nova lozinka mora imati najmanje 6 znakova',
         variant: 'destructive'
       });
       return;
@@ -209,17 +220,34 @@ const Profile = () => {
       });
       return;
     }
+    
     setPasswordLoading(true);
     try {
-      const {
-        error
-      } = await supabase.auth.updateUser({
+      // Verify current password by re-authenticating
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: currentPassword
+      });
+      
+      if (signInError) {
+        toast({
+          title: 'Greška',
+          description: 'Trenutna lozinka nije ispravna',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Update to new password
+      const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
       if (error) throw error;
+      
       toast({
         title: 'Lozinka uspješno promijenjena!'
       });
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
@@ -317,10 +345,14 @@ const Profile = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handlePasswordReset} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current_password">Trenutna lozinka</Label>
+                  <Input id="current_password" type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required placeholder="Vaša trenutna lozinka" />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="new_password">Nova lozinka</Label>
-                  <Input id="new_password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required placeholder="Minimalno 8 znakova" />
+                  <Input id="new_password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required placeholder="Minimalno 6 znakova" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm_password">Potvrdi lozinku</Label>
