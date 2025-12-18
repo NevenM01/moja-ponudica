@@ -151,7 +151,6 @@ const OfferDetail = () => {
       ));
     }
 
-    let itemCounter = 1;
     return groups.map((group) => {
       const groupItems = items.filter(item => item.group_id === group.id);
       return (
@@ -162,26 +161,23 @@ const OfferDetail = () => {
               {group.opis && <div className="text-sm text-muted-foreground mt-1">{group.opis}</div>}
             </td>
           </tr>
-          {groupItems.map((item) => {
-            const currentIndex = itemCounter++;
-            return (
-              <tr key={item.id} className={`${currentIndex % 2 === 0 ? 'bg-background' : 'bg-muted/20'} ${item.is_optional ? 'opacity-70' : ''}`}>
-                <td className="p-3 text-center text-muted-foreground">{currentIndex}.</td>
-                <td className="p-3">
-                  {item.opis}
-                  {item.is_optional && (
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      opcijski
-                    </span>
-                  )}
-                </td>
-                <td className="p-3 text-center">{item.jedinica || 'kom'}</td>
-                <td className="p-3 text-center">{Number(item.kolicina)}</td>
-                <td className="p-3 text-right">{formatNumber(Number(item.cijena))} €</td>
-                <td className="p-3 text-right font-medium">{formatNumber(Number(item.ukupno))} €</td>
-              </tr>
-            );
-          })}
+          {groupItems.map((item, itemIndex) => (
+            <tr key={item.id} className={`${itemIndex % 2 === 0 ? 'bg-background' : 'bg-muted/20'} ${item.is_optional ? 'opacity-70' : ''}`}>
+              <td className="p-3 text-center text-muted-foreground">{group.redni_broj}.{itemIndex + 1}.</td>
+              <td className="p-3">
+                {item.opis}
+                {item.is_optional && (
+                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                    opcijski
+                  </span>
+                )}
+              </td>
+              <td className="p-3 text-center">{item.jedinica || 'kom'}</td>
+              <td className="p-3 text-center">{Number(item.kolicina)}</td>
+              <td className="p-3 text-right">{formatNumber(Number(item.cijena))} €</td>
+              <td className="p-3 text-right font-medium">{formatNumber(Number(item.ukupno))} €</td>
+            </tr>
+          ))}
         </>
       );
     });
@@ -207,7 +203,6 @@ const OfferDetail = () => {
       ));
     }
 
-    let itemCounter = 1;
     return groups.map((group) => {
       const groupItems = items.filter(item => item.group_id === group.id);
       return (
@@ -216,25 +211,22 @@ const OfferDetail = () => {
             <div className="font-bold">{group.redni_broj}. {group.naziv}</div>
             {group.opis && <div className="text-sm text-muted-foreground mt-1">{group.opis}</div>}
           </div>
-          {groupItems.map((item) => {
-            itemCounter++;
-            return (
-              <div key={item.id} className={`border rounded-lg p-4 mb-2 ${item.is_optional ? 'opacity-70' : ''}`}>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <p className="font-medium">{item.opis}</p>
-                  {item.is_optional && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
-                      opcijski
-                    </span>
-                  )}
-                </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{item.kolicina} {item.jedinica || 'kom'} × {formatNumber(item.cijena)} €</span>
-                  <span className="font-medium text-foreground">{formatNumber(item.ukupno)} €</span>
-                </div>
+          {groupItems.map((item, itemIndex) => (
+            <div key={item.id} className={`border rounded-lg p-4 mb-2 ${item.is_optional ? 'opacity-70' : ''}`}>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="font-medium">{group.redni_broj}.{itemIndex + 1}. {item.opis}</p>
+                {item.is_optional && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
+                    opcijski
+                  </span>
+                )}
               </div>
-            );
-          })}
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{item.kolicina} {item.jedinica || 'kom'} × {formatNumber(item.cijena)} €</span>
+                <span className="font-medium text-foreground">{formatNumber(item.ukupno)} €</span>
+              </div>
+            </div>
+          ))}
         </div>
       );
     });

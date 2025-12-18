@@ -273,57 +273,53 @@ const OfferPreview = () => {
                   </thead>
                   <tbody>
                     {groups.length > 0 ? (
-                      (() => {
-                        let itemCounter = 1;
-                        return groups.map((group) => {
-                          const groupItems = items.filter(item => item.group_id === group.id);
-                          return (
-                            <React.Fragment key={`group-${group.id}`}>
-                              <tr className="bg-muted/50">
-                                <td colSpan={hasOptionalItems ? 7 : 6} className="p-3">
-                                  <div className="font-bold">{group.redni_broj}. {group.naziv}</div>
-                                  {group.opis && <div className="text-sm text-muted-foreground mt-1">{group.opis}</div>}
-                                </td>
-                              </tr>
-                              {groupItems.map((item) => {
-                                const currentIndex = itemCounter++;
-                                const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
-                                return (
-                                  <tr 
-                                    key={item.id} 
-                                    className={`${currentIndex % 2 === 0 ? 'bg-background' : 'bg-muted/20'} ${item.is_optional && !isSelected ? 'opacity-50' : ''}`}
-                                  >
-                                    {hasOptionalItems && (
-                                      <td className="p-3 text-center">
-                                        {item.is_optional ? (
-                                          <Checkbox
-                                            checked={selectedOptionalItems.has(item.id)}
-                                            onCheckedChange={() => isPending && toggleOptionalItem(item.id)}
-                                            disabled={!isPending}
-                                          />
-                                        ) : null}
-                                      </td>
-                                    )}
-                                    <td className="p-3 text-center text-muted-foreground">{currentIndex}.</td>
-                                    <td className="p-3">
-                                      {item.opis}
-                                      {item.is_optional && (
-                                        <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                          opcijski
-                                        </span>
-                                      )}
+                      groups.map((group) => {
+                        const groupItems = items.filter(item => item.group_id === group.id);
+                        return (
+                          <React.Fragment key={`group-${group.id}`}>
+                            <tr className="bg-muted/50">
+                              <td colSpan={hasOptionalItems ? 7 : 6} className="p-3">
+                                <div className="font-bold">{group.redni_broj}. {group.naziv}</div>
+                                {group.opis && <div className="text-sm text-muted-foreground mt-1">{group.opis}</div>}
+                              </td>
+                            </tr>
+                            {groupItems.map((item, itemIndex) => {
+                              const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
+                              return (
+                                <tr 
+                                  key={item.id} 
+                                  className={`${itemIndex % 2 === 0 ? 'bg-background' : 'bg-muted/20'} ${item.is_optional && !isSelected ? 'opacity-50' : ''}`}
+                                >
+                                  {hasOptionalItems && (
+                                    <td className="p-3 text-center">
+                                      {item.is_optional ? (
+                                        <Checkbox
+                                          checked={selectedOptionalItems.has(item.id)}
+                                          onCheckedChange={() => isPending && toggleOptionalItem(item.id)}
+                                          disabled={!isPending}
+                                        />
+                                      ) : null}
                                     </td>
-                                    <td className="p-3 text-center">{item.jedinica || 'kom'}</td>
-                                    <td className="p-3 text-center">{item.kolicina}</td>
-                                    <td className="p-3 text-right">{formatNumber(item.cijena)} €</td>
-                                    <td className="p-3 text-right font-medium">{formatNumber(item.ukupno)} €</td>
-                                  </tr>
-                                );
-                              })}
-                            </React.Fragment>
-                          );
-                        });
-                      })()
+                                  )}
+                                  <td className="p-3 text-center text-muted-foreground">{group.redni_broj}.{itemIndex + 1}.</td>
+                                  <td className="p-3">
+                                    {item.opis}
+                                    {item.is_optional && (
+                                      <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                        opcijski
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-3 text-center">{item.jedinica || 'kom'}</td>
+                                  <td className="p-3 text-center">{item.kolicina}</td>
+                                  <td className="p-3 text-right">{formatNumber(item.cijena)} €</td>
+                                  <td className="p-3 text-right font-medium">{formatNumber(item.ukupno)} €</td>
+                                </tr>
+                              );
+                            })}
+                          </React.Fragment>
+                        );
+                      })
                     ) : (
                       items.map((item, index) => {
                         const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
@@ -367,40 +363,37 @@ const OfferPreview = () => {
               {/* Mobile Cards */}
               <div className="sm:hidden space-y-3">
                 {groups.length > 0 ? (
-                  (() => {
-                    let itemCounter = 1;
-                    return groups.map((group) => {
-                      const groupItems = items.filter(item => item.group_id === group.id);
-                      return (
-                        <div key={`group-${group.id}`}>
-                          <div className="bg-muted/50 rounded-lg p-3 mb-2">
-                            <div className="font-bold">{group.redni_broj}. {group.naziv}</div>
-                            {group.opis && <div className="text-sm text-muted-foreground mt-1">{group.opis}</div>}
-                          </div>
-                          {groupItems.map((item) => {
-                            itemCounter++;
-                            const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
-                            return (
-                              <div 
-                                key={item.id} 
-                                className={`border rounded-lg p-4 mb-2 ${item.is_optional && !isSelected ? 'opacity-50' : ''}`}
-                              >
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                  <div className="flex items-center gap-2">
-                                    {item.is_optional && isPending && (
-                                      <Checkbox
-                                        checked={selectedOptionalItems.has(item.id)}
-                                        onCheckedChange={() => toggleOptionalItem(item.id)}
-                                      />
-                                    )}
-                                    <p className="font-medium">{item.opis}</p>
-                                  </div>
-                                  {item.is_optional && (
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
-                                      opcijski
-                                    </span>
+                  groups.map((group) => {
+                    const groupItems = items.filter(item => item.group_id === group.id);
+                    return (
+                      <div key={`group-${group.id}`}>
+                        <div className="bg-muted/50 rounded-lg p-3 mb-2">
+                          <div className="font-bold">{group.redni_broj}. {group.naziv}</div>
+                          {group.opis && <div className="text-sm text-muted-foreground mt-1">{group.opis}</div>}
+                        </div>
+                        {groupItems.map((item, itemIndex) => {
+                          const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
+                          return (
+                            <div 
+                              key={item.id} 
+                              className={`border rounded-lg p-4 mb-2 ${item.is_optional && !isSelected ? 'opacity-50' : ''}`}
+                            >
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex items-center gap-2">
+                                  {item.is_optional && isPending && (
+                                    <Checkbox
+                                      checked={selectedOptionalItems.has(item.id)}
+                                      onCheckedChange={() => toggleOptionalItem(item.id)}
+                                    />
                                   )}
+                                  <p className="font-medium">{group.redni_broj}.{itemIndex + 1}. {item.opis}</p>
                                 </div>
+                                {item.is_optional && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground shrink-0">
+                                    opcijski
+                                  </span>
+                                )}
+                              </div>
                                 <div className="grid grid-cols-3 gap-2 text-sm">
                                   <div>
                                     <span className="text-muted-foreground">Količina:</span>
@@ -420,8 +413,7 @@ const OfferPreview = () => {
                           })}
                         </div>
                       );
-                    });
-                  })()
+                    })
                 ) : (
                   items.map((item) => {
                     const isSelected = !item.is_optional || selectedOptionalItems.has(item.id);
