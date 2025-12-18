@@ -19,14 +19,31 @@ interface Offer {
   ukupno: number;
   created_at: string;
   status: string | null;
+  accepted_at: string | null;
+  rejected_at: string | null;
 }
 
-const getStatusBadge = (status: string | null) => {
+const getStatusBadge = (status: string | null, accepted_at: string | null, rejected_at: string | null) => {
+  const formatStatusDate = (date: string | null) => {
+    if (!date) return null;
+    return format(new Date(date), 'dd.MM.yyyy.');
+  };
+
   switch (status) {
     case 'accepted':
-      return <Badge className="bg-green-500/20 text-green-500 border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Prihvaćeno</Badge>;
+      return (
+        <div className="flex items-center gap-2">
+          <Badge className="bg-green-500/20 text-green-500 border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Prihvaćeno</Badge>
+          {accepted_at && <span className="text-xs text-muted-foreground">{formatStatusDate(accepted_at)}</span>}
+        </div>
+      );
     case 'rejected':
-      return <Badge className="bg-red-500/20 text-red-500 border-red-500/30"><XCircle className="h-3 w-3 mr-1" />Odbijeno</Badge>;
+      return (
+        <div className="flex items-center gap-2">
+          <Badge className="bg-red-500/20 text-red-500 border-red-500/30"><XCircle className="h-3 w-3 mr-1" />Odbijeno</Badge>
+          {rejected_at && <span className="text-xs text-muted-foreground">{formatStatusDate(rejected_at)}</span>}
+        </div>
+      );
     default:
       return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30"><Clock className="h-3 w-3 mr-1" />Na čekanju</Badge>;
   }
@@ -135,7 +152,7 @@ const OfferList = () => {
                         <TableCell className="font-medium">{offer.offer_number}</TableCell>
                         <TableCell>{offer.client_naziv}</TableCell>
                         <TableCell>{format(new Date(offer.created_at), 'dd.MM.yyyy.')}</TableCell>
-                        <TableCell>{getStatusBadge(offer.status)}</TableCell>
+                        <TableCell>{getStatusBadge(offer.status, offer.accepted_at, offer.rejected_at)}</TableCell>
                         <TableCell className="text-right">{Number(offer.ukupno).toFixed(2)}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -174,7 +191,7 @@ const OfferList = () => {
                       <p className="font-bold text-primary">{Number(offer.ukupno).toFixed(2)} €</p>
                     </div>
                     <div className="mt-2">
-                      {getStatusBadge(offer.status)}
+                      {getStatusBadge(offer.status, offer.accepted_at, offer.rejected_at)}
                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <p className="text-sm text-muted-foreground">
