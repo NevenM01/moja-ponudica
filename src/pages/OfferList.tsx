@@ -5,7 +5,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Eye, Trash2 } from 'lucide-react';
+import { Plus, Eye, Trash2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import { format } from 'date-fns';
@@ -16,7 +17,19 @@ interface Offer {
   client_naziv: string;
   ukupno: number;
   created_at: string;
+  status: string | null;
 }
+
+const getStatusBadge = (status: string | null) => {
+  switch (status) {
+    case 'accepted':
+      return <Badge className="bg-green-500/20 text-green-500 border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Prihvaćeno</Badge>;
+    case 'rejected':
+      return <Badge className="bg-red-500/20 text-red-500 border-red-500/30"><XCircle className="h-3 w-3 mr-1" />Odbijeno</Badge>;
+    default:
+      return <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30"><Clock className="h-3 w-3 mr-1" />Na čekanju</Badge>;
+  }
+};
 
 const OfferList = () => {
   const { user } = useAuth();
@@ -86,6 +99,7 @@ const OfferList = () => {
                       <TableHead>Broj ponude</TableHead>
                       <TableHead>Klijent</TableHead>
                       <TableHead>Datum</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead className="text-right">Ukupno (€)</TableHead>
                       <TableHead className="w-24"></TableHead>
                     </TableRow>
@@ -96,6 +110,7 @@ const OfferList = () => {
                         <TableCell className="font-medium">{offer.offer_number}</TableCell>
                         <TableCell>{offer.client_naziv}</TableCell>
                         <TableCell>{format(new Date(offer.created_at), 'dd.MM.yyyy.')}</TableCell>
+                        <TableCell>{getStatusBadge(offer.status)}</TableCell>
                         <TableCell className="text-right">{Number(offer.ukupno).toFixed(2)}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -132,6 +147,9 @@ const OfferList = () => {
                         <p className="text-foreground">{offer.client_naziv}</p>
                       </div>
                       <p className="font-bold text-primary">{Number(offer.ukupno).toFixed(2)} €</p>
+                    </div>
+                    <div className="mt-2">
+                      {getStatusBadge(offer.status)}
                     </div>
                     <div className="flex items-center justify-between mt-3">
                       <p className="text-sm text-muted-foreground">
