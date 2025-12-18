@@ -79,7 +79,7 @@ export const generatePDF = (
         groupItems.forEach((item) => {
           const bgColor = itemCounter % 2 === 0 ? '#fff' : '#fafafa';
           itemsHtml += `
-            <tr style="background: ${bgColor};">
+            <tr style="background: ${bgColor}; page-break-inside: avoid;">
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${itemCounter}.</td>
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0;">${item.opis}</td>
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
@@ -97,7 +97,7 @@ export const generatePDF = (
     items.forEach((item, index) => {
       const bgColor = index % 2 === 0 ? '#fff' : '#fafafa';
       itemsHtml += `
-        <tr style="background: ${bgColor};">
+        <tr style="background: ${bgColor}; page-break-inside: avoid;">
           <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${index + 1}.</td>
           <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0;">${item.opis}</td>
           <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 50px;">${item.jedinica || 'kom'}</td>
@@ -317,11 +317,37 @@ export const generatePDF = (
         @media print {
           body { padding: 0; }
           @page { margin: 15mm; }
+          
+          /* Spriječi prijelom unutar redova tablice */
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          
+          /* Spriječi prijelom unutar važnih sekcija */
+          .client-section,
+          .napomena,
+          .total-section,
+          .footer {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          
+          /* Zaglavlje tablice ponavlja se na svakoj stranici */
+          thead {
+            display: table-header-group;
+          }
+          
+          /* Tablica se može prelomiti između redova */
+          table {
+            page-break-inside: auto;
+          }
+          
           .header {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
-          .offer-badge, .total-box {
+          .offer-badge, .total-box, .client-box, .napomena {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
