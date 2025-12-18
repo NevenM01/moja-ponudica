@@ -4,7 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X } from 'lucide-react';
+import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X, Palette } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/components/AppLayout';
 
 interface Note {
@@ -14,11 +15,12 @@ interface Note {
 }
 
 const COLORS = [
-  'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/30 border-amber-200/50 dark:border-amber-700/50 shadow-amber-100/50 dark:shadow-amber-900/20',
-  'bg-gradient-to-br from-sky-50 to-blue-100 dark:from-sky-900/20 dark:to-blue-900/30 border-sky-200/50 dark:border-sky-700/50 shadow-sky-100/50 dark:shadow-sky-900/20',
-  'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/30 border-emerald-200/50 dark:border-emerald-700/50 shadow-emerald-100/50 dark:shadow-emerald-900/20',
-  'bg-gradient-to-br from-rose-50 to-pink-100 dark:from-rose-900/20 dark:to-pink-900/30 border-rose-200/50 dark:border-rose-700/50 shadow-rose-100/50 dark:shadow-rose-900/20',
-  'bg-gradient-to-br from-violet-50 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/30 border-violet-200/50 dark:border-violet-700/50 shadow-violet-100/50 dark:shadow-violet-900/20',
+  { class: 'bg-gradient-to-br from-amber-50 to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/30 border-amber-200/50 dark:border-amber-700/50 shadow-amber-100/50 dark:shadow-amber-900/20', preview: 'bg-amber-200 dark:bg-amber-700' },
+  { class: 'bg-gradient-to-br from-sky-50 to-blue-100 dark:from-sky-900/20 dark:to-blue-900/30 border-sky-200/50 dark:border-sky-700/50 shadow-sky-100/50 dark:shadow-sky-900/20', preview: 'bg-sky-200 dark:bg-sky-700' },
+  { class: 'bg-gradient-to-br from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/30 border-emerald-200/50 dark:border-emerald-700/50 shadow-emerald-100/50 dark:shadow-emerald-900/20', preview: 'bg-emerald-200 dark:bg-emerald-700' },
+  { class: 'bg-gradient-to-br from-rose-50 to-pink-100 dark:from-rose-900/20 dark:to-pink-900/30 border-rose-200/50 dark:border-rose-700/50 shadow-rose-100/50 dark:shadow-rose-900/20', preview: 'bg-rose-200 dark:bg-rose-700' },
+  { class: 'bg-gradient-to-br from-violet-50 to-purple-100 dark:from-violet-900/20 dark:to-purple-900/30 border-violet-200/50 dark:border-violet-700/50 shadow-violet-100/50 dark:shadow-violet-900/20', preview: 'bg-violet-200 dark:bg-violet-700' },
+  { class: 'bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-900/30 border-orange-200/50 dark:border-orange-700/50 shadow-orange-100/50 dark:shadow-orange-900/20', preview: 'bg-orange-200 dark:bg-orange-700' },
 ];
 
 const Dashboard = () => {
@@ -65,13 +67,21 @@ const Dashboard = () => {
 
   const addNote = () => {
     if (!newNote.trim()) return;
+    const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
     const note: Note = {
       id: crypto.randomUUID(),
       text: newNote,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      color: randomColor.class,
     };
     saveNotes([...notes, note]);
     setNewNote('');
+  };
+
+  const changeNoteColor = (noteId: string, newColor: string) => {
+    const updatedNotes = notes.map(n => 
+      n.id === noteId ? { ...n, color: newColor } : n
+    );
+    saveNotes(updatedNotes);
   };
 
   const deleteNote = (id: string) => {
@@ -198,6 +208,24 @@ const Dashboard = () => {
                     ) : (
                       <>
                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200 flex gap-1">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button className="p-2 hover:bg-background/60 rounded-lg backdrop-blur-sm transition-colors">
+                                <Palette className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-2" align="end">
+                              <div className="flex gap-1.5">
+                                {COLORS.map((color, index) => (
+                                  <button
+                                    key={index}
+                                    onClick={() => changeNoteColor(note.id, color.class)}
+                                    className={`w-6 h-6 rounded-full ${color.preview} hover:scale-110 transition-transform ring-2 ring-transparent hover:ring-foreground/20`}
+                                  />
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                           <button
                             onClick={() => startEdit(note)}
                             className="p-2 hover:bg-background/60 rounded-lg backdrop-blur-sm transition-colors"
