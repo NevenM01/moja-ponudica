@@ -4,15 +4,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X, Palette, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X, Palette, CheckCircle, XCircle, Clock, BarChart3 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/components/AppLayout';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Note {
   id: string;
   text: string;
   color: string;
   createdAt: string;
+}
+
+interface MonthlyData {
+  month: string;
+  count: number;
 }
 
 const COLORS = [
@@ -24,12 +30,15 @@ const COLORS = [
   { class: 'bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-900/30 border-orange-200/50 dark:border-orange-700/50 shadow-orange-100/50 dark:shadow-orange-900/20', preview: 'bg-orange-200 dark:bg-orange-700' },
 ];
 
+const MONTH_NAMES = ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'];
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [offerCount, setOfferCount] = useState<number | null>(null);
   const [acceptedCount, setAcceptedCount] = useState<number | null>(null);
   const [rejectedCount, setRejectedCount] = useState<number | null>(null);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState('');
@@ -39,6 +48,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       fetchStats();
+      fetchMonthlyData();
       loadNotes();
     }
   }, [user]);
@@ -57,6 +67,35 @@ const Dashboard = () => {
     if (!pendingResult.error) setPendingCount(pendingResult.count || 0);
     
     setLoading(false);
+  };
+
+  const fetchMonthlyData = async () => {
+    const { data: offers } = await supabase
+      .from('offers')
+      .select('created_at')
+      .eq('user_id', user?.id);
+
+    if (!offers) return;
+
+    // Get last 12 months
+    const now = new Date();
+    const months: MonthlyData[] = [];
+    
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const count = offers.filter(o => {
+        const offerDate = new Date(o.created_at);
+        return offerDate.getFullYear() === date.getFullYear() && offerDate.getMonth() === date.getMonth();
+      }).length;
+      
+      months.push({
+        month: MONTH_NAMES[date.getMonth()],
+        count
+      });
+    }
+
+    setMonthlyData(months);
   };
 
   const loadNotes = () => {
@@ -194,6 +233,35 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Ponude po mjesecima
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="month" className="text-xs fill-muted-foreground" />
+                  <YAxis allowDecimals={false} className="text-xs fill-muted-foreground" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
+                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Ponude" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
