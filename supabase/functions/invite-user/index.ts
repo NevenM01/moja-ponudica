@@ -74,11 +74,12 @@ serve(async (req) => {
         throw new Error('Korisnik s tom email adresom već postoji');
       }
 
-      // Check for existing pending invitation
+      // Check for existing pending invitation only (ignore accepted/expired)
       const { data: existingInvitation } = await supabaseAdmin
         .from('invitations')
         .select('id')
         .eq('email', normalizedEmail)
+        .eq('status', 'pending')
         .maybeSingle();
 
       if (existingInvitation) {

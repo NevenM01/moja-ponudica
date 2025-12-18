@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowLeft, Mail, Send, RotateCw } from 'lucide-react';
+import { ArrowLeft, Mail, Send, RotateCw, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -34,6 +34,7 @@ const AdminInvitations = () => {
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchInvitations = async () => {
     const { data, error } = await supabase
@@ -112,6 +113,33 @@ const AdminInvitations = () => {
     }
 
     setResendingId(null);
+  };
+
+  const handleDeleteInvitation = async (invitation: Invitation) => {
+    if (!confirm(`Jeste li sigurni da želite obrisati pozivnicu za ${invitation.email}?`)) {
+      return;
+    }
+
+    setDeletingId(invitation.id);
+
+    try {
+      const { error } = await supabase
+        .from('invitations')
+        .delete()
+        .eq('id', invitation.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast.success('Pozivnica obrisana');
+      fetchInvitations();
+    } catch (error: any) {
+      console.error('Error deleting invitation:', error);
+      toast.error(error.message || 'Greška pri brisanju pozivnice');
+    }
+
+    setDeletingId(null);
   };
 
   const formatDate = (dateString: string | null) => {
@@ -204,16 +232,29 @@ const AdminInvitations = () => {
                           <TableCell>{formatDate(invitation.created_at)}</TableCell>
                           <TableCell>{formatDate(invitation.accepted_at)}</TableCell>
                           <TableCell>
-                            {invitation.status === 'pending' && (
+                            <div className="flex gap-1">
+                              {invitation.status === 'pending' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleResendInvitation(invitation)}
+                                  disabled={resendingId === invitation.id}
+                                  title="Ponovno pošalji"
+                                >
+                                  <RotateCw className={`h-4 w-4 ${resendingId === invitation.id ? 'animate-spin' : ''}`} />
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleResendInvitation(invitation)}
-                                disabled={resendingId === invitation.id}
+                                onClick={() => handleDeleteInvitation(invitation)}
+                                disabled={deletingId === invitation.id}
+                                title="Obriši"
+                                className="text-destructive hover:text-destructive"
                               >
-                                <RotateCw className={`h-4 w-4 ${resendingId === invitation.id ? 'animate-spin' : ''}`} />
+                                <Trash2 className={`h-4 w-4 ${deletingId === invitation.id ? 'animate-pulse' : ''}`} />
                               </Button>
-                            )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -231,16 +272,27 @@ const AdminInvitations = () => {
                             <span className="font-medium">{invitation.email}</span>
                             <div className="flex items-center gap-2">
                               {getStatusBadge(invitation.status)}
-                              {invitation.status === 'pending' && (
+                              <div className="flex gap-1">
+                                {invitation.status === 'pending' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleResendInvitation(invitation)}
+                                    disabled={resendingId === invitation.id}
+                                  >
+                                    <RotateCw className={`h-4 w-4 ${resendingId === invitation.id ? 'animate-spin' : ''}`} />
+                                  </Button>
+                                )}
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleResendInvitation(invitation)}
-                                  disabled={resendingId === invitation.id}
+                                  onClick={() => handleDeleteInvitation(invitation)}
+                                  disabled={deletingId === invitation.id}
+                                  className="text-destructive hover:text-destructive"
                                 >
-                                  <RotateCw className={`h-4 w-4 ${resendingId === invitation.id ? 'animate-spin' : ''}`} />
+                                  <Trash2 className={`h-4 w-4 ${deletingId === invitation.id ? 'animate-pulse' : ''}`} />
                                 </Button>
-                              )}
+                              </div>
                             </div>
                           </div>
                           <div className="text-sm text-muted-foreground">
