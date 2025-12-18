@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle, XCircle, Loader2, FileText, Building2, User, Calendar, CreditCard } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, FileText, Building2, User, Calendar, CreditCard, Download } from "lucide-react";
 import { toast } from "sonner";
+import { generatePDF } from "@/lib/pdfGenerator";
 
 interface Offer {
   id: string;
@@ -484,6 +485,43 @@ const OfferPreview = () => {
                 </div>
               </div>
             )}
+
+            {/* Download Button */}
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (offer && company) {
+                    generatePDF(
+                      {
+                        offer_number: offer.offer_number,
+                        client_naziv: offer.client_naziv,
+                        client_oib: offer.client_oib || '',
+                        client_adresa: offer.client_adresa || '',
+                        napomena: offer.napomena || '',
+                        ukupno: calculatedTotal,
+                        created_at: offer.created_at
+                      },
+                      items.filter(item => !item.is_optional || selectedOptionalItems.has(item.id)),
+                      {
+                        naziv_firme: company.naziv_firme,
+                        oib: company.oib,
+                        adresa: company.adresa,
+                        iban: company.iban || '',
+                        email: company.email || '',
+                        telefon: company.telefon || '',
+                        logo_url: company.logo_url || ''
+                      },
+                      groups
+                    );
+                  }
+                }}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Preuzmi PDF
+              </Button>
+            </div>
           </div>
 
           {/* Action Footer */}
