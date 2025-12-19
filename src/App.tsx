@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { TenantProvider } from "@/hooks/useTenant";
 import { useAdmin } from "@/hooks/useAdmin";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -20,7 +19,6 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminInvitations from "./pages/admin/AdminInvitations";
-import AdminTenants from "./pages/admin/AdminTenants";
 import SetPassword from "./pages/SetPassword";
 
 const queryClient = new QueryClient();
@@ -82,7 +80,6 @@ const AppRoutes = () => {
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/korisnici" element={<AdminRoute><AdminUsers /></AdminRoute>} />
       <Route path="/admin/pozivnice" element={<AdminRoute><AdminInvitations /></AdminRoute>} />
-      <Route path="/admin/tenanti" element={<AdminRoute><AdminTenants /></AdminRoute>} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -97,9 +94,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <TenantProvider>
-              <AppRoutes />
-            </TenantProvider>
+            <AppRoutes />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

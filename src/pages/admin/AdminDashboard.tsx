@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Mail, FileText, Shield, Building2 } from 'lucide-react';
+import { Users, Mail, FileText, Shield } from 'lucide-react';
 
 interface Stats {
   totalUsers: number;
   totalOffers: number;
   pendingInvitations: number;
   acceptedInvitations: number;
-  totalTenants: number;
 }
 
 const AdminDashboard = () => {
@@ -18,18 +17,16 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalOffers: 0,
     pendingInvitations: 0,
-    acceptedInvitations: 0,
-    totalTenants: 0
+    acceptedInvitations: 0
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [profilesRes, offersRes, invitationsRes, tenantsRes] = await Promise.all([
+      const [profilesRes, offersRes, invitationsRes] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('offers').select('id', { count: 'exact', head: true }),
-        supabase.from('invitations').select('status'),
-        supabase.from('tenants').select('id', { count: 'exact', head: true })
+        supabase.from('invitations').select('status')
       ]);
 
       const pending = invitationsRes.data?.filter(i => i.status === 'pending').length || 0;
@@ -39,8 +36,7 @@ const AdminDashboard = () => {
         totalUsers: profilesRes.count || 0,
         totalOffers: offersRes.count || 0,
         pendingInvitations: pending,
-        acceptedInvitations: accepted,
-        totalTenants: tenantsRes.count || 0
+        acceptedInvitations: accepted
       });
       setLoading(false);
     };
@@ -54,12 +50,6 @@ const AdminDashboard = () => {
       value: stats.totalUsers,
       icon: Users,
       link: '/admin/korisnici'
-    },
-    {
-      title: 'Tenanti / Brandovi',
-      value: stats.totalTenants,
-      icon: Building2,
-      link: '/admin/tenanti'
     },
     {
       title: 'Ukupno ponuda',
@@ -125,7 +115,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
           <Link to="/admin/korisnici">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardHeader>
@@ -153,22 +143,6 @@ const AdminDashboard = () => {
               <CardContent>
                 <p className="text-muted-foreground text-sm">
                   Pošaljite pozivnice novim korisnicima i pratite status
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link to="/admin/tenanti">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  Tenanti / Brandovi
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Upravljajte brandovima, bojama i dodjelom korisnika
                 </p>
               </CardContent>
             </Card>
