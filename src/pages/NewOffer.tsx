@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTenant } from '@/hooks/useTenant';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,6 +54,7 @@ const createNewGroup = (redni_broj: number): OfferGroup => {
 
 const NewOffer = () => {
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -206,6 +208,7 @@ const NewOffer = () => {
         .from('offer_templates')
         .insert({
           user_id: user?.id,
+          tenant_id: tenant?.id,
           naziv: newTemplateName,
           napomena: napomena,
         })
@@ -353,6 +356,7 @@ const NewOffer = () => {
         .from('offers')
         .insert({
           user_id: user?.id,
+          tenant_id: tenant?.id,
           offer_number: offerNumber,
           client_naziv: clientNaziv,
           client_oib: clientOib,

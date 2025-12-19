@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTenant } from '@/hooks/useTenant';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,9 +22,8 @@ interface CompanyProfile {
   logo_url: string;
 }
 const Profile = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
   const navigate = useNavigate();
   const {
     toast
@@ -168,6 +168,7 @@ const Profile = () => {
           error
         } = await supabase.from('company_profiles').insert({
           user_id: user?.id,
+          tenant_id: tenant?.id,
           naziv_firme: profile.naziv_firme,
           oib: profile.oib,
           adresa: profile.adresa,
