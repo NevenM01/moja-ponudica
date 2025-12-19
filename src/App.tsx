@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminInvitations from "./pages/admin/AdminInvitations";
+import AdminTenants from "./pages/admin/AdminTenants";
 import SetPassword from "./pages/SetPassword";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,7 @@ const AppRoutes = () => {
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/korisnici" element={<AdminRoute><AdminUsers /></AdminRoute>} />
       <Route path="/admin/pozivnice" element={<AdminRoute><AdminInvitations /></AdminRoute>} />
+      <Route path="/admin/tenanti" element={<AdminRoute><AdminTenants /></AdminRoute>} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
