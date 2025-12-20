@@ -23,26 +23,54 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Users, Trash2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ArrowLeft, Users, Trash2, Building2, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+
+interface Tenant {
+  id: string;
+  naziv: string;
+  slug: string;
+}
 
 interface UserProfile {
   id: string;
   email: string | null;
   created_at: string;
   last_sign_in_at: string | null;
+  tenant_id: string | null;
   offer_count: number;
 }
 
 const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+
+  const fetchTenants = async () => {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('id, naziv, slug')
+      .order('naziv');
+
+    if (!error && data) {
+      setTenants(data);
+    }
+  };
 
   const fetchUsers = async () => {
-    // Fetch profiles
+    // Fetch profiles with tenant_id
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('*')
@@ -74,8 +102,30 @@ const AdminUsers = () => {
   };
 
   useEffect(() => {
+    fetchTenants();
     fetchUsers();
   }, []);
+
+  const handleAssignTenant = async (userId: string, tenantId: string | null) => {
+    setUpdatingUserId(userId);
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ tenant_id: tenantId })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast.success('Tenant uspješno dodijeljen');
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error assigning tenant:', error);
+      toast.error(error.message || 'Greška pri dodjeli tenanta');
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
 
   const handleDeleteUser = async (userId: string, userEmail: string | null) => {
     setDeletingUserId(userId);
@@ -116,6 +166,14 @@ const AdminUsers = () => {
     return format(new Date(dateString), 'dd.MM.yyyy. HH:mm', { locale: hr });
   };
 
+  const getTenantName = (tenantId: string | null) => {
+    if (!tenantId) return null;
+    const tenant = tenants.find(t => t.id === tenantId);
+    return tenant?.naziv || 'Nepoznat';
+  };
+
+  const usersWithoutTenant = users.filter(u => !u.tenant_id);
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -130,6 +188,46 @@ const AdminUsers = () => {
             <h1 className="text-2xl font-bold">Korisnici</h1>
           </div>
         </div>
+
+        {usersWithoutTenant.length > 0 && (
+          <Card className="border-warning bg-warning/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-warning-foreground">
+                <AlertCircle className="h-5 w-5" />
+                Korisnici bez tenanta ({usersWithoutTenant.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-3">
+                Ovi korisnici nemaju dodijeljen tenant i ne mogu kreirati profil tvrtke.
+              </p>
+              <div className="space-y-2">
+                {usersWithoutTenant.map(user => (
+                  <div key={user.id} className="flex items-center justify-between p-2 bg-background rounded border">
+                    <span className="font-medium">{user.email || user.id}</span>
+                    <Select
+                      value={user.tenant_id || "none"}
+                      onValueChange={(value) => handleAssignTenant(user.id, value === "none" ? null : value)}
+                      disabled={updatingUserId === user.id}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Odaberi tenant" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Bez tenanta</SelectItem>
+                        {tenants.map(tenant => (
+                          <SelectItem key={tenant.id} value={tenant.id}>
+                            {tenant.naziv}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -146,6 +244,7 @@ const AdminUsers = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Email</TableHead>
+                        <TableHead>Tenant</TableHead>
                         <TableHead>Registriran</TableHead>
                         <TableHead>Zadnja prijava</TableHead>
                         <TableHead className="text-right">Ponude</TableHead>
@@ -156,6 +255,36 @@ const AdminUsers = () => {
                       {users.map((user) => (
                         <TableRow key={user.id}>
                           <TableCell className="font-medium">{user.email || '-'}</TableCell>
+                          <TableCell>
+                            <Select
+                              value={user.tenant_id || "none"}
+                              onValueChange={(value) => handleAssignTenant(user.id, value === "none" ? null : value)}
+                              disabled={updatingUserId === user.id}
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue>
+                                  {user.tenant_id ? (
+                                    <span className="flex items-center gap-2">
+                                      <Building2 className="h-3 w-3" />
+                                      {getTenantName(user.tenant_id)}
+                                    </span>
+                                  ) : (
+                                    <Badge variant="outline" className="text-muted-foreground">
+                                      Bez tenanta
+                                    </Badge>
+                                  )}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Bez tenanta</SelectItem>
+                                {tenants.map(tenant => (
+                                  <SelectItem key={tenant.id} value={tenant.id}>
+                                    {tenant.naziv}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
                           <TableCell>{formatDate(user.created_at)}</TableCell>
                           <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
                           <TableCell className="text-right">{user.offer_count}</TableCell>
@@ -203,7 +332,7 @@ const AdminUsers = () => {
                     <Card key={user.id}>
                       <CardContent className="pt-4">
                         <div className="flex justify-between items-start">
-                          <div className="space-y-2">
+                          <div className="space-y-2 flex-1">
                             <div className="font-medium">{user.email || '-'}</div>
                             <div className="text-sm text-muted-foreground">
                               Registriran: {formatDate(user.created_at)}
@@ -213,6 +342,36 @@ const AdminUsers = () => {
                             </div>
                             <div className="text-sm">
                               Ponude: <span className="font-medium">{user.offer_count}</span>
+                            </div>
+                            <div className="pt-2">
+                              <Select
+                                value={user.tenant_id || "none"}
+                                onValueChange={(value) => handleAssignTenant(user.id, value === "none" ? null : value)}
+                                disabled={updatingUserId === user.id}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue>
+                                    {user.tenant_id ? (
+                                      <span className="flex items-center gap-2">
+                                        <Building2 className="h-3 w-3" />
+                                        {getTenantName(user.tenant_id)}
+                                      </span>
+                                    ) : (
+                                      <Badge variant="outline" className="text-muted-foreground">
+                                        Bez tenanta
+                                      </Badge>
+                                    )}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Bez tenanta</SelectItem>
+                                  {tenants.map(tenant => (
+                                    <SelectItem key={tenant.id} value={tenant.id}>
+                                      {tenant.naziv}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                           </div>
                           <AlertDialog>
