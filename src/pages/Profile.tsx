@@ -35,6 +35,7 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [userTenantId, setUserTenantId] = useState<string | null>(null);
   const [profile, setProfile] = useState<CompanyProfile>({
     naziv_firme: '',
     oib: '',
@@ -47,8 +48,19 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchUserTenantId();
     }
   }, [user]);
+
+  const fetchUserTenantId = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('tenant_id')
+      .eq('id', user?.id)
+      .maybeSingle();
+    setUserTenantId(data?.tenant_id || null);
+  };
+
   const fetchProfile = async () => {
     const {
       data,
@@ -164,10 +176,22 @@ const Profile = () => {
         }).eq('id', profile.id);
         if (error) throw error;
       } else {
+        // Provjeri ima li korisnik dodijeljen tenant
+        if (!userTenantId) {
+          toast({
+            title: 'Greška',
+            description: 'Nemate dodijeljen tenant. Kontaktirajte administratora.',
+            variant: 'destructive'
+          });
+          setLoading(false);
+          return;
+        }
+
         const {
           error
         } = await supabase.from('company_profiles').insert({
           user_id: user?.id,
+          tenant_id: userTenantId,
           naziv_firme: profile.naziv_firme,
           oib: profile.oib,
           adresa: profile.adresa,
