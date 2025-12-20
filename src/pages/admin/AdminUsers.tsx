@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -24,13 +26,22 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Users, Trash2, Building2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Users, Trash2, Building2, AlertCircle, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -57,6 +68,12 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+  
+  // New tenant dialog state
+  const [isNewTenantOpen, setIsNewTenantOpen] = useState(false);
+  const [newTenantName, setNewTenantName] = useState('');
+  const [newTenantSlug, setNewTenantSlug] = useState('');
+  const [creatingTenant, setCreatingTenant] = useState(false);
 
   const fetchTenants = async () => {
     const { data, error } = await supabase
@@ -105,6 +122,50 @@ const AdminUsers = () => {
     fetchTenants();
     fetchUsers();
   }, []);
+
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/č/g, 'c')
+      .replace(/ć/g, 'c')
+      .replace(/đ/g, 'd')
+      .replace(/š/g, 's')
+      .replace(/ž/g, 'z')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
+  const handleCreateTenant = async () => {
+    if (!newTenantName.trim()) {
+      toast.error('Unesite naziv tenanta');
+      return;
+    }
+
+    const slug = newTenantSlug.trim() || generateSlug(newTenantName);
+
+    setCreatingTenant(true);
+    try {
+      const { error } = await supabase
+        .from('tenants')
+        .insert({
+          naziv: newTenantName.trim(),
+          slug: slug
+        });
+
+      if (error) throw error;
+
+      toast.success('Tenant uspješno kreiran');
+      setNewTenantName('');
+      setNewTenantSlug('');
+      setIsNewTenantOpen(false);
+      fetchTenants();
+    } catch (error: any) {
+      console.error('Error creating tenant:', error);
+      toast.error(error.message || 'Greška pri kreiranju tenanta');
+    } finally {
+      setCreatingTenant(false);
+    }
+  };
 
   const handleAssignTenant = async (userId: string, tenantId: string | null) => {
     setUpdatingUserId(userId);
@@ -177,16 +238,66 @@ const AdminUsers = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Link to="/admin">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Users className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">Korisnici</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/admin">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div className="flex items-center gap-3">
+              <Users className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold">Korisnici</h1>
+            </div>
           </div>
+          
+          <Dialog open={isNewTenantOpen} onOpenChange={setIsNewTenantOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Novi tenant
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Kreiraj novi tenant</DialogTitle>
+                <DialogDescription>
+                  Unesite podatke za novi tenant (organizaciju/tvrtku).
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tenant-name">Naziv *</Label>
+                  <Input
+                    id="tenant-name"
+                    value={newTenantName}
+                    onChange={(e) => setNewTenantName(e.target.value)}
+                    placeholder="npr. Moja Tvrtka d.o.o."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tenant-slug">Slug (opciono)</Label>
+                  <Input
+                    id="tenant-slug"
+                    value={newTenantSlug}
+                    onChange={(e) => setNewTenantSlug(e.target.value)}
+                    placeholder={newTenantName ? generateSlug(newTenantName) : 'automatski iz naziva'}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Jedinstveni identifikator za URL-ove. Ako ostavite prazno, automatski će se generirati iz naziva.
+                  </p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsNewTenantOpen(false)}>
+                  Odustani
+                </Button>
+                <Button onClick={handleCreateTenant} disabled={creatingTenant}>
+                  {creatingTenant ? 'Kreiranje...' : 'Kreiraj tenant'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {usersWithoutTenant.length > 0 && (
