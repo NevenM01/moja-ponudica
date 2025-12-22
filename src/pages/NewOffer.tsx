@@ -96,11 +96,18 @@ const NewOffer = () => {
   };
 
   const fetchTemplates = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('offer_templates')
       .select('id, naziv, napomena')
-      .eq('user_id', user?.id)
       .order('created_at', { ascending: false });
+
+    console.log('Fetch templates result:', { data, error });
+
+    if (error) {
+      console.error('Error fetching templates:', error);
+      toast({ title: 'Greška', description: 'Nije moguće učitati predloške.', variant: 'destructive' });
+      return;
+    }
 
     if (data) {
       setTemplates(data);
@@ -273,10 +280,29 @@ const NewOffer = () => {
         supabase.from('offer_template_items').select('*').eq('template_id', selectedTemplateId),
       ]);
 
-      if (templateResult.error) throw templateResult.error;
+      console.log('Template load results:', {
+        template: templateResult,
+        groups: groupsResult,
+        items: itemsResult
+      });
+
+      if (templateResult.error) {
+        console.error('Template fetch error:', templateResult.error);
+        throw templateResult.error;
+      }
+
+      if (groupsResult.error) {
+        console.error('Groups fetch error:', groupsResult.error);
+      }
+
+      if (itemsResult.error) {
+        console.error('Items fetch error:', itemsResult.error);
+      }
 
       const templateGroups = groupsResult.data || [];
       const templateItems = itemsResult.data || [];
+
+      console.log('Parsed data:', { templateGroups, templateItems });
 
       // Set napomena from template
       if (templateResult.data.napomena) {
@@ -300,6 +326,8 @@ const NewOffer = () => {
               group_id: newGroupId,
             }));
 
+          console.log(`Group ${tGroup.naziv} items:`, groupItems);
+
           return {
             id: newGroupId,
             naziv: tGroup.naziv,
@@ -309,14 +337,19 @@ const NewOffer = () => {
           };
         });
 
+        console.log('Final loaded groups:', loadedGroups);
         setGroups(loadedGroups);
+      } else {
+        console.warn('No template groups found, keeping default group');
+        toast({ title: 'Upozorenje', description: 'Predložak nema grupa.', variant: 'destructive' });
       }
 
       toast({ title: 'Predložak učitan!' });
       setLoadTemplateOpen(false);
       setSelectedTemplateId('');
     } catch (error: any) {
-      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+      console.error('Load template error:', error);
+      toast({ title: 'Greška pri učitavanju', description: error.message, variant: 'destructive' });
     }
   };
 
