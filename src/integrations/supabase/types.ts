@@ -336,6 +336,8 @@ export type Database = {
           created_at: string
           id: string
           napomena: string | null
+          objekat_naziv: string | null
+          objekat_opis: string | null
           offer_number: string
           rejected_at: string | null
           share_token: string | null
@@ -353,6 +355,8 @@ export type Database = {
           created_at?: string
           id?: string
           napomena?: string | null
+          objekat_naziv?: string | null
+          objekat_opis?: string | null
           offer_number: string
           rejected_at?: string | null
           share_token?: string | null
@@ -370,6 +374,8 @@ export type Database = {
           created_at?: string
           id?: string
           napomena?: string | null
+          objekat_naziv?: string | null
+          objekat_opis?: string | null
           offer_number?: string
           rejected_at?: string | null
           share_token?: string | null
