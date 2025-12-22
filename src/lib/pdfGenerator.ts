@@ -320,9 +320,11 @@ export const generatePDF = (
           left: 50%;
           transform: translate(-50%, -50%);
           z-index: -1;
-          opacity: 0.06;
+          opacity: 0.04;
           pointer-events: none;
-          display: none;
+          display: block;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
         
         .watermark img {
@@ -331,18 +333,19 @@ export const generatePDF = (
         }
         
         @media print {
-          @page { margin: 0; size: A4; }
-          body { padding: 15mm; }
+          @page { margin: 15mm; size: A4; }
+          body { padding: 0; }
           
           .watermark {
             display: block;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            opacity: 0.04;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           
           /* Stavke ponude na novoj stranici s gornjim razmakom */
           .items-section {
-            padding-top: 15mm;
+            padding-top: 10mm;
           }
           
           /* Spriječi prijelom unutar redova tablice */
@@ -355,6 +358,7 @@ export const generatePDF = (
           .client-section,
           .napomena,
           .total-section,
+          .rekapitulacija-section,
           .footer {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
@@ -376,12 +380,12 @@ export const generatePDF = (
           }
           
           .header {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          .offer-badge, .total-box, .client-box, .napomena {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+          .offer-badge, .total-box, .client-box, .napomena, .rekapitulacija-section {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       </style>
@@ -467,6 +471,18 @@ export const generatePDF = (
           </div>
         ` : ''}
 
+        <div class="rekapitulacija-section" style="margin-top: 24px; border-top: 2px solid #333; padding-top: 16px; background: #f8f9fa; padding: 16px; border-radius: 8px;">
+          <div style="font-weight: bold; text-decoration: underline; margin-bottom: 12px;">REKAPITULACIJA</div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+            <span>UKUPNO OSNOVNA OPREMA, €</span>
+            <span style="font-weight: 500;">${formatNumber(Number(offer.ukupno))}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 2px solid #333; font-weight: bold; font-size: 14px;">
+            <span>SVEUKUPNO, €</span>
+            <span>${formatNumber(Number(offer.ukupno))}</span>
+          </div>
+        </div>
+
         <div class="items-section">
           <h3>Stavke ponude</h3>
           <table>
@@ -484,18 +500,6 @@ export const generatePDF = (
               ${itemsHtml}
             </tbody>
           </table>
-        </div>
-
-        <div class="rekapitulacija-section" style="margin-top: 30px; border-top: 2px solid #333; padding-top: 16px;">
-          <div style="font-weight: bold; text-decoration: underline; margin-bottom: 12px;">REKAPITULACIJA</div>
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
-            <span>UKUPNO OSNOVNA OPREMA, €</span>
-            <span style="font-weight: 500;">${formatNumber(Number(offer.ukupno))}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 2px solid #333; font-weight: bold; font-size: 14px;">
-            <span>SVEUKUPNO, €</span>
-            <span>${formatNumber(Number(offer.ukupno))}</span>
-          </div>
         </div>
 
         <div class="total-section">
@@ -521,6 +525,51 @@ export const generatePDF = (
   if (printWindow) {
     printWindow.document.write(html);
     printWindow.document.close();
-    printWindow.print();
+    
+    // Čekaj da se slike učitaju prije printanja
+    const images = printWindow.document.querySelectorAll('img');
+    let loadedCount = 0;
+    const totalImages = images.length;
+
+    const triggerPrint = () => {
+      printWindow.print();
+    };
+
+    if (totalImages === 0) {
+      triggerPrint();
+    } else {
+      let printTriggered = false;
+      
+      const checkAndPrint = () => {
+        if (!printTriggered && loadedCount === totalImages) {
+          printTriggered = true;
+          triggerPrint();
+        }
+      };
+
+      images.forEach(img => {
+        if (img.complete) {
+          loadedCount++;
+          checkAndPrint();
+        } else {
+          img.onload = () => {
+            loadedCount++;
+            checkAndPrint();
+          };
+          img.onerror = () => {
+            loadedCount++;
+            checkAndPrint();
+          };
+        }
+      });
+
+      // Fallback timeout - print after 2 seconds if images haven't loaded
+      setTimeout(() => {
+        if (!printTriggered) {
+          printTriggered = true;
+          triggerPrint();
+        }
+      }, 2000);
+    }
   }
 };
