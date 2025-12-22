@@ -72,6 +72,8 @@ const EditOffer = () => {
   }, [user, id]);
 
   const fetchData = async () => {
+    console.log('EditOffer: Fetching data for offer:', id, 'user:', user?.id);
+    
     const [offerResult, groupsResult, itemsResult, profileResult] = await Promise.all([
       supabase.from('offers').select('*').eq('id', id).single(),
       supabase.from('offer_item_groups').select('*').eq('offer_id', id).order('redni_broj'),
@@ -79,7 +81,12 @@ const EditOffer = () => {
       supabase.from('company_profiles').select('naziv_firme, oib, adresa, iban, email, telefon').eq('user_id', user?.id).maybeSingle(),
     ]);
 
+    console.log('EditOffer: Offer result:', offerResult);
+    console.log('EditOffer: Groups result:', groupsResult);
+    console.log('EditOffer: Items result:', itemsResult);
+
     if (offerResult.error) {
+      console.error('EditOffer: Offer fetch error:', offerResult.error);
       toast({ title: 'Greška', description: offerResult.error.message, variant: 'destructive' });
       navigate('/');
       return;
