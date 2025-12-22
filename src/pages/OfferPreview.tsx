@@ -15,6 +15,8 @@ interface Offer {
   client_naziv: string;
   client_oib: string | null;
   client_adresa: string | null;
+  objekat_naziv: string | null;
+  objekat_opis: string | null;
   napomena: string | null;
   ukupno: number;
   created_at: string;
@@ -233,11 +235,31 @@ const OfferPreview = () => {
             <div className="mb-6 space-y-1 text-sm">
               <div className="flex gap-2">
                 <span className="font-bold w-20">PREDMET:</span>
-                <span className="font-bold">PONUDA {offer.offer_number}</span>
+                <span className="font-bold">PONUDA</span>
               </div>
-              <div className="flex gap-2">
-                <span className="font-bold w-20">KLIJENT:</span>
-                <span>{offer.client_naziv}</span>
+              {offer.objekat_naziv && (
+                <>
+                  <div className="flex gap-2">
+                    <span className="font-bold w-20">OBJEKAT:</span>
+                    <span>{offer.objekat_naziv}</span>
+                  </div>
+                  {offer.objekat_opis && (
+                    <div className="ml-20 text-muted-foreground text-xs">{offer.objekat_opis}</div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* REKAPITULACIJA section */}
+            <div className="mb-6 border-t-2 border-foreground pt-3 bg-muted/30 rounded-lg p-4">
+              <div className="font-bold underline mb-3 text-sm">REKAPITULACIJA</div>
+              <div className="flex justify-between py-2 border-b text-xs">
+                <span>UKUPNO OSNOVNA OPREMA, €</span>
+                <span className="font-medium">{formatNumber(calculatedTotal)}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b-2 border-foreground font-bold text-sm">
+                <span>SVEUKUPNO, €</span>
+                <span>{formatNumber(calculatedTotal)}</span>
               </div>
             </div>
 
@@ -276,6 +298,11 @@ const OfferPreview = () => {
                     {groups.length > 0 ? (
                       groups.map((group) => {
                         const groupItems = items.filter(item => item.group_id === group.id);
+                        const groupTotal = groupItems.reduce((sum, item) => {
+                          if (!item.is_optional) return sum + item.ukupno;
+                          if (selectedOptionalItems.has(item.id)) return sum + item.ukupno;
+                          return sum;
+                        }, 0);
                         return (
                           <React.Fragment key={`group-${group.id}`}>
                             <tr className="bg-muted/50">
@@ -318,6 +345,15 @@ const OfferPreview = () => {
                                 </tr>
                               );
                             })}
+                            {/* Group total row */}
+                            {groupItems.length > 0 && (
+                              <tr className="bg-primary/5">
+                                <td colSpan={hasOptionalItems ? 6 : 5} className="p-3 text-right font-bold text-sm border-b-2">
+                                  Ukupno za grupu {group.redni_broj}:
+                                </td>
+                                <td className="p-3 text-right font-bold text-sm border-b-2">{formatNumber(groupTotal)} €</td>
+                              </tr>
+                            )}
                           </React.Fragment>
                         );
                       })
@@ -366,6 +402,11 @@ const OfferPreview = () => {
                 {groups.length > 0 ? (
                   groups.map((group) => {
                     const groupItems = items.filter(item => item.group_id === group.id);
+                    const groupTotal = groupItems.reduce((sum, item) => {
+                      if (!item.is_optional) return sum + item.ukupno;
+                      if (selectedOptionalItems.has(item.id)) return sum + item.ukupno;
+                      return sum;
+                    }, 0);
                     return (
                       <div key={`group-${group.id}`}>
                         <div className="bg-muted/50 rounded-lg p-3 mb-2">
@@ -412,6 +453,13 @@ const OfferPreview = () => {
                               </div>
                             );
                           })}
+                        {/* Group total for mobile */}
+                        {groupItems.length > 0 && (
+                          <div className="bg-primary/5 rounded-lg p-3 mb-4 flex justify-between font-bold text-sm border-b-2">
+                            <span>Ukupno za grupu {group.redni_broj}:</span>
+                            <span>{formatNumber(groupTotal)} €</span>
+                          </div>
+                        )}
                         </div>
                       );
                     })
@@ -498,6 +546,8 @@ const OfferPreview = () => {
                         client_naziv: offer.client_naziv,
                         client_oib: offer.client_oib || '',
                         client_adresa: offer.client_adresa || '',
+                        objekat_naziv: offer.objekat_naziv || undefined,
+                        objekat_opis: offer.objekat_opis || undefined,
                         napomena: offer.napomena || '',
                         ukupno: calculatedTotal,
                         created_at: offer.created_at

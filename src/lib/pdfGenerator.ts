@@ -64,6 +64,7 @@ export const generatePDF = (
     
     groups.forEach((group) => {
       const groupItems = items.filter(item => item.group_id === group.id);
+      const groupTotal = groupItems.reduce((sum, item) => sum + Number(item.ukupno), 0);
       
       if (groupItems.length > 0 || group.naziv) {
         // Group header
@@ -90,6 +91,16 @@ export const generatePDF = (
             </tr>
           `;
         });
+        
+        // Group total row
+        if (groupItems.length > 0) {
+          itemsHtml += `
+            <tr style="background: rgba(240, 244, 255, 0.6); page-break-inside: avoid;">
+              <td colspan="5" style="padding: 10px 8px; border-bottom: 2px solid #e0e0e0; text-align: right; font-weight: bold; font-size: 11px;">Ukupno za grupu ${group.redni_broj}:</td>
+              <td style="padding: 10px 8px; border-bottom: 2px solid #e0e0e0; text-align: right; font-weight: bold; font-size: 11px;">${formatNumber(groupTotal)} €</td>
+            </tr>
+          `;
+        }
       }
     });
   } else {
@@ -335,7 +346,15 @@ export const generatePDF = (
         }
         
         @media print {
-          @page { margin: 15mm; size: A4; }
+          @page { 
+            margin: 15mm; 
+            size: A4;
+            @bottom-center {
+              content: "Stranica " counter(page) " od " counter(pages);
+              font-size: 9px;
+              color: #999;
+            }
+          }
           body { padding: 0; }
           
           .watermark {
