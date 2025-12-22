@@ -3,6 +3,8 @@ interface Offer {
   client_naziv: string;
   client_oib: string;
   client_adresa: string;
+  objekat_naziv?: string;
+  objekat_opis?: string;
   napomena: string;
   ukupno: number;
   created_at: string;
@@ -447,12 +449,15 @@ export const generatePDF = (
         <div class="predmet-section">
           <div class="predmet-row">
             <span class="predmet-label">PREDMET:</span>
-            <span><strong>PONUDA ${offerNumber}</strong></span>
+            <span><strong>PONUDA</strong></span>
           </div>
+          ${offer.objekat_naziv ? `
           <div class="predmet-row">
-            <span class="predmet-label">KLIJENT:</span>
-            <span>${offer.client_naziv}</span>
+            <span class="predmet-label">OBJEKAT:</span>
+            <span>${offer.objekat_naziv}</span>
           </div>
+          ${offer.objekat_opis ? `<div style="margin-left: 80px; color: #666; font-size: 10px; margin-top: 4px;">${offer.objekat_opis}</div>` : ''}
+          ` : ''}
         </div>
 
         ${offer.napomena ? `
@@ -479,6 +484,18 @@ export const generatePDF = (
               ${itemsHtml}
             </tbody>
           </table>
+        </div>
+
+        <div class="rekapitulacija-section" style="margin-top: 30px; border-top: 2px solid #333; padding-top: 16px;">
+          <div style="font-weight: bold; text-decoration: underline; margin-bottom: 12px;">REKAPITULACIJA</div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
+            <span>UKUPNO OSNOVNA OPREMA, €</span>
+            <span style="font-weight: 500;">${formatNumber(Number(offer.ukupno))}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 2px solid #333; font-weight: bold; font-size: 14px;">
+            <span>SVEUKUPNO, €</span>
+            <span>${formatNumber(Number(offer.ukupno))}</span>
+          </div>
         </div>
 
         <div class="total-section">

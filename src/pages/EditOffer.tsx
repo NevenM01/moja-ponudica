@@ -56,6 +56,8 @@ const EditOffer = () => {
   const [clientNaziv, setClientNaziv] = useState('');
   const [clientOib, setClientOib] = useState('');
   const [clientAdresa, setClientAdresa] = useState('');
+  const [objekatNaziv, setObjekatNaziv] = useState('');
+  const [objekatOpis, setObjekatOpis] = useState('');
   const [napomena, setNapomena] = useState('');
   const [groups, setGroups] = useState<OfferGroup[]>([]);
   const [deletedGroupIds, setDeletedGroupIds] = useState<string[]>([]);
@@ -96,6 +98,8 @@ const EditOffer = () => {
     setClientNaziv(offer.client_naziv);
     setClientOib(offer.client_oib || '');
     setClientAdresa(offer.client_adresa || '');
+    setObjekatNaziv((offer as any).objekat_naziv || '');
+    setObjekatOpis((offer as any).objekat_opis || '');
     setNapomena(offer.napomena || '');
 
     const existingGroups = groupsResult.data || [];
@@ -267,6 +271,8 @@ const EditOffer = () => {
           client_naziv: clientNaziv,
           client_oib: clientOib,
           client_adresa: clientAdresa,
+          objekat_naziv: objekatNaziv || null,
+          objekat_opis: objekatOpis || null,
           napomena,
           ukupno: total,
         })
@@ -410,6 +416,28 @@ const EditOffer = () => {
                   id="client_adresa"
                   value={clientAdresa}
                   onChange={(e) => setClientAdresa(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-2">
+                <Label htmlFor="objekat_naziv">Objekat (naziv)</Label>
+                <Input
+                  id="objekat_naziv"
+                  value={objekatNaziv}
+                  onChange={(e) => setObjekatNaziv(e.target.value)}
+                  placeholder="npr. Vanjski bazen uz obiteljsku kuću 50m2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="objekat_opis">Opis objekta</Label>
+                <Textarea
+                  id="objekat_opis"
+                  value={objekatOpis}
+                  onChange={(e) => setObjekatOpis(e.target.value)}
+                  placeholder="Dodatni opis objekta..."
+                  rows={2}
                 />
               </div>
             </div>
