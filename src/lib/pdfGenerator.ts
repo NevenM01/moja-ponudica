@@ -69,7 +69,7 @@ export const generatePDF = (
         // Group header
         itemsHtml += `
           <tr>
-            <td colspan="6" style="padding: 12px 8px 8px; font-weight: bold; font-size: 12px; background: #f0f4ff; border-bottom: 1px solid #e0e0e0;">
+            <td colspan="6" style="padding: 12px 8px 8px; font-weight: bold; font-size: 12px; background: rgba(240, 244, 255, 0.85); border-bottom: 1px solid #e0e0e0;">
               ${group.redni_broj}. ${group.naziv}
               ${group.opis ? `<div style="font-weight: normal; font-size: 11px; margin-top: 4px; color: #666;">${group.opis}</div>` : ''}
             </td>
@@ -78,7 +78,7 @@ export const generatePDF = (
         
         // Group items with hierarchical numbering
         groupItems.forEach((item, itemIndex) => {
-          const bgColor = itemIndex % 2 === 0 ? '#fff' : '#fafafa';
+          const bgColor = itemIndex % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(250,250,250,0.85)';
           itemsHtml += `
             <tr style="background: ${bgColor}; page-break-inside: avoid;">
               <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${group.redni_broj}.${itemIndex + 1}.</td>
@@ -95,7 +95,7 @@ export const generatePDF = (
   } else {
     // No groups - flat items
     items.forEach((item, index) => {
-      const bgColor = index % 2 === 0 ? '#fff' : '#fafafa';
+      const bgColor = index % 2 === 0 ? 'rgba(255,255,255,0.85)' : 'rgba(250,250,250,0.85)';
       itemsHtml += `
         <tr style="background: ${bgColor}; page-break-inside: avoid;">
           <td style="padding: 10px 8px; border-bottom: 1px solid #e0e0e0; text-align: center; width: 40px; color: #666;">${index + 1}.</td>
@@ -213,7 +213,7 @@ export const generatePDF = (
           gap: 6px;
         }
         .client-box {
-          background: #f8f9fa;
+          background: rgba(248, 249, 250, 0.85);
           border-radius: 8px;
           padding: 16px;
         }
@@ -240,20 +240,23 @@ export const generatePDF = (
         }
         
         .napomena {
-          margin-bottom: 24px;
-          background: #f8f9fa;
-          border-radius: 8px;
-          padding: 16px;
+          margin-bottom: 16px;
+          background: rgba(248, 249, 250, 0.85);
+          border-radius: 6px;
+          padding: 10px 12px;
+          max-height: 80px;
+          overflow: hidden;
         }
         .napomena-title {
           font-weight: 500;
-          margin-bottom: 6px;
-          font-size: 11px;
+          margin-bottom: 4px;
+          font-size: 10px;
         }
         .napomena-text {
           color: #666;
-          font-size: 11px;
+          font-size: 9px;
           white-space: pre-wrap;
+          line-height: 1.3;
         }
         
         .items-section h3 {
@@ -319,8 +322,8 @@ export const generatePDF = (
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          z-index: -1;
-          opacity: 0.04;
+          z-index: 1;
+          opacity: 0.05;
           pointer-events: none;
           display: block;
           -webkit-print-color-adjust: exact !important;
@@ -464,24 +467,24 @@ export const generatePDF = (
           ` : ''}
         </div>
 
+        <div class="rekapitulacija-section" style="margin-top: 16px; border-top: 2px solid #333; padding-top: 12px; background: rgba(248, 249, 250, 0.85); padding: 12px; border-radius: 8px;">
+          <div style="font-weight: bold; text-decoration: underline; margin-bottom: 8px; font-size: 11px;">REKAPITULACIJA</div>
+          <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e0e0e0; font-size: 10px;">
+            <span>UKUPNO OSNOVNA OPREMA, €</span>
+            <span style="font-weight: 500;">${formatNumber(Number(offer.ukupno))}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 2px solid #333; font-weight: bold; font-size: 12px;">
+            <span>SVEUKUPNO, €</span>
+            <span>${formatNumber(Number(offer.ukupno))}</span>
+          </div>
+        </div>
+
         ${offer.napomena ? `
           <div class="napomena">
             <div class="napomena-title">Napomena</div>
             <div class="napomena-text">${offer.napomena}</div>
           </div>
         ` : ''}
-
-        <div class="rekapitulacija-section" style="margin-top: 24px; border-top: 2px solid #333; padding-top: 16px; background: #f8f9fa; padding: 16px; border-radius: 8px;">
-          <div style="font-weight: bold; text-decoration: underline; margin-bottom: 12px;">REKAPITULACIJA</div>
-          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0;">
-            <span>UKUPNO OSNOVNA OPREMA, €</span>
-            <span style="font-weight: 500;">${formatNumber(Number(offer.ukupno))}</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 2px solid #333; font-weight: bold; font-size: 14px;">
-            <span>SVEUKUPNO, €</span>
-            <span>${formatNumber(Number(offer.ukupno))}</span>
-          </div>
-        </div>
 
         <div class="items-section">
           <h3>Stavke ponude</h3>
