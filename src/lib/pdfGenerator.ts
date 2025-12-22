@@ -244,8 +244,7 @@ export const generatePDF = (
           background: rgba(248, 249, 250, 0.85);
           border-radius: 6px;
           padding: 12px 16px;
-          max-height: 120px;
-          overflow: hidden;
+          page-break-inside: avoid;
         }
         .napomena-title {
           font-weight: 500;
