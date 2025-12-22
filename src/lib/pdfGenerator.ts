@@ -243,20 +243,20 @@ export const generatePDF = (
           margin-bottom: 16px;
           background: rgba(248, 249, 250, 0.85);
           border-radius: 6px;
-          padding: 10px 12px;
-          max-height: 80px;
+          padding: 12px 16px;
+          max-height: 120px;
           overflow: hidden;
         }
         .napomena-title {
           font-weight: 500;
-          margin-bottom: 4px;
-          font-size: 10px;
+          margin-bottom: 6px;
+          font-size: 11px;
         }
         .napomena-text {
           color: #666;
-          font-size: 9px;
+          font-size: 10px;
           white-space: pre-wrap;
-          line-height: 1.3;
+          line-height: 1.4;
         }
         
         .items-section h3 {
