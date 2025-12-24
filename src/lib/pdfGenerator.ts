@@ -527,11 +527,11 @@ export const generatePDF = (
           <div class="signature-section" style="display: flex; gap: 60px;">
             <div style="text-align: center;">
               <div style="border-top: 1px solid #333; width: 150px; margin-bottom: 4px;"></div>
-              <div style="font-size: 9px; color: #666;">Potpis naručitelja</div>
+              <div style="font-size: 9px; color: #666;">Potpis klijenta</div>
             </div>
             <div style="text-align: center;">
               <div style="border-top: 1px solid #333; width: 150px; margin-bottom: 4px;"></div>
-              <div style="font-size: 9px; color: #666;">Potpis ponuditelja</div>
+              <div style="font-size: 9px; color: #666;">Potpis izvođača</div>
             </div>
           </div>
           <div class="total-box">
