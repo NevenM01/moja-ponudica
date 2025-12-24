@@ -139,7 +139,7 @@ export const generatePDF = (
         
         .header {
           background: linear-gradient(135deg, #f0f4ff 0%, #e8efff 100%);
-          padding: 30px 40px;
+          padding: 16px 30px;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
@@ -152,15 +152,15 @@ export const generatePDF = (
         }
         
         .logo { 
-          height: 70px; 
+          height: 90px; 
           width: auto;
           border-radius: 8px;
           background: #fff;
           padding: 4px;
         }
         .logo-placeholder { 
-          height: 70px; 
-          width: 70px; 
+          height: 90px; 
+          width: 90px; 
           background: rgba(99, 102, 241, 0.1);
           border-radius: 8px;
           display: flex; 
