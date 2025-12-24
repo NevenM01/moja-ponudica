@@ -104,18 +104,18 @@ const OfferItemsEditor = ({
           <CardContent className="p-4 pt-2">
             {/* Desktop table */}
             <div className="hidden md:block">
-              <div className="grid grid-cols-12 gap-2 mb-2 text-xs font-medium text-muted-foreground px-1">
-                <div className="col-span-1">Br.</div>
-                <div className="col-span-3">Naziv</div>
-                <div className="col-span-1">Jed</div>
-                <div className="col-span-2">Kol</div>
-                <div className="col-span-2">Jed cijena</div>
-                <div className="col-span-2">Ukupno</div>
-                <div className="col-span-1"></div>
+              <div className="grid grid-cols-[60px_1fr_80px_100px_100px_120px_40px] gap-2 mb-2 text-xs font-medium text-muted-foreground px-1">
+                <div>Br.</div>
+                <div>Naziv</div>
+                <div>Jed</div>
+                <div>Kol</div>
+                <div>Jed cijena</div>
+                <div>Ukupno</div>
+                <div></div>
               </div>
               {group.items.map((item, itemIndex) => (
-                <div key={item.id} className="grid grid-cols-12 gap-2 mb-2 items-center">
-                  <div className="col-span-1 flex items-center gap-1">
+                <div key={item.id} className="grid grid-cols-[60px_1fr_80px_100px_100px_120px_40px] gap-2 mb-2 items-center">
+                  <div className="flex items-center gap-1">
                     <span className="text-sm font-medium text-muted-foreground">{group.redni_broj}.{itemIndex + 1}</span>
                     <div className="flex flex-col">
                       <Button
@@ -140,7 +140,7 @@ const OfferItemsEditor = ({
                       </Button>
                     </div>
                   </div>
-                  <div className="col-span-3">
+                  <div>
                     <Input
                       value={item.opis}
                       onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
@@ -148,7 +148,7 @@ const OfferItemsEditor = ({
                       required
                     />
                   </div>
-                  <div className="col-span-1">
+                  <div>
                     <Select
                       value={item.jedinica}
                       onValueChange={(value) => onUpdateItem(group.id, item.id, 'jedinica', value)}
@@ -165,7 +165,7 @@ const OfferItemsEditor = ({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <Input
                       type="number"
                       min="0"
@@ -174,7 +174,7 @@ const OfferItemsEditor = ({
                       onChange={(e) => onUpdateItem(group.id, item.id, 'kolicina', parseFloat(e.target.value) || 0)}
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <Input
                       type="number"
                       min="0"
@@ -183,7 +183,7 @@ const OfferItemsEditor = ({
                       onChange={(e) => onUpdateItem(group.id, item.id, 'cijena', parseFloat(e.target.value) || 0)}
                     />
                   </div>
-                  <div className="col-span-2 flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="font-medium text-sm">{item.ukupno.toFixed(2)} €</span>
                     <div className="flex items-center gap-1">
                       <Checkbox
@@ -194,7 +194,7 @@ const OfferItemsEditor = ({
                       <Label htmlFor={`opt-${item.id}`} className="text-xs text-muted-foreground">Opc</Label>
                     </div>
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="flex justify-end">
                     <Button
                       type="button"
                       variant="ghost"
