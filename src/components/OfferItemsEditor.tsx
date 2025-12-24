@@ -141,10 +141,12 @@ const OfferItemsEditor = ({
                     </div>
                   </div>
                   <div>
-                    <Input
+                    <textarea
                       value={item.opis}
                       onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
                       placeholder="Naziv stavke"
+                      className="w-full min-h-[38px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+                      rows={1}
                       required
                     />
                   </div>
@@ -251,10 +253,12 @@ const OfferItemsEditor = ({
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs">Naziv</Label>
-                    <Input
+                    <textarea
                       value={item.opis}
                       onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
                       placeholder="Naziv stavke"
+                      className="w-full min-h-[38px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+                      rows={1}
                       required
                     />
                   </div>
