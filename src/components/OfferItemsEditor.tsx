@@ -48,6 +48,11 @@ const UNIT_OPTIONS = [
   { value: 'paušal', label: 'paušal' },
 ];
 
+const autoResize = (element: HTMLTextAreaElement) => {
+  element.style.height = 'auto';
+  element.style.height = element.scrollHeight + 'px';
+};
+
 const OfferItemsEditor = ({
   groups,
   onUpdateGroup,
@@ -143,9 +148,13 @@ const OfferItemsEditor = ({
                   <div>
                     <textarea
                       value={item.opis}
-                      onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
+                      onChange={(e) => {
+                        onUpdateItem(group.id, item.id, 'opis', e.target.value);
+                        autoResize(e.target);
+                      }}
+                      ref={(el) => el && autoResize(el)}
                       placeholder="Naziv stavke"
-                      className="w-full min-h-[38px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+                      className="w-full min-h-[38px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none overflow-hidden"
                       rows={1}
                       required
                     />
@@ -255,9 +264,13 @@ const OfferItemsEditor = ({
                     <Label className="text-xs">Naziv</Label>
                     <textarea
                       value={item.opis}
-                      onChange={(e) => onUpdateItem(group.id, item.id, 'opis', e.target.value)}
+                      onChange={(e) => {
+                        onUpdateItem(group.id, item.id, 'opis', e.target.value);
+                        autoResize(e.target);
+                      }}
+                      ref={(el) => el && autoResize(el)}
                       placeholder="Naziv stavke"
-                      className="w-full min-h-[38px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+                      className="w-full min-h-[38px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none overflow-hidden"
                       rows={1}
                       required
                     />
