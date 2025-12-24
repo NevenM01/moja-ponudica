@@ -72,31 +72,34 @@ const OfferItemsEditor = ({
       {groups.map((group) => (
         <Card key={group.id} className="border-border">
           <CardHeader className="p-4 pb-2">
-            <div className="flex items-center gap-3">
-              <span className="text-lg font-bold text-primary">{group.redni_broj}.</span>
-              <Input
-                value={group.naziv}
-                onChange={(e) => onUpdateGroup(group.id, 'naziv', e.target.value)}
-                placeholder="Naziv grupe (npr. FILTRACIJA I CIRKULACIJA)"
-                className="flex-1 font-semibold"
-              />
+            <div className="flex items-start gap-3">
+              <span className="text-lg font-bold text-primary mt-2">{group.redni_broj}.</span>
+              <div className="flex-1 space-y-2">
+                <Input
+                  value={group.naziv}
+                  onChange={(e) => onUpdateGroup(group.id, 'naziv', e.target.value)}
+                  placeholder="Naziv grupe (npr. FILTRACIJA I CIRKULACIJA)"
+                  className="w-full font-semibold"
+                />
+                <textarea
+                  value={group.opis || ''}
+                  onChange={(e) => onUpdateGroup(group.id, 'opis', e.target.value)}
+                  placeholder="Opis grupe (opcionalno)"
+                  className="w-full min-h-[60px] px-3 py-2 text-sm rounded-md border border-input bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-y"
+                  rows={2}
+                />
+              </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => onRemoveGroup(group.id)}
                 disabled={groups.length === 1}
-                className="text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive mt-1"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            <Input
-              value={group.opis || ''}
-              onChange={(e) => onUpdateGroup(group.id, 'opis', e.target.value)}
-              placeholder="Opis grupe (opcionalno)"
-              className="mt-2 text-sm"
-            />
           </CardHeader>
           <CardContent className="p-4 pt-2">
             {/* Desktop table */}
