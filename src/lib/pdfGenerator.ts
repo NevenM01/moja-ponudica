@@ -184,29 +184,6 @@ export const generatePDF = (
           color: #666;
         }
         
-        .offer-badge-section {
-          text-align: right;
-        }
-        .offer-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          background: #6366f1;
-          color: #fff;
-          padding: 10px 20px;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 13px;
-        }
-        .offer-date {
-          margin-top: 8px;
-          color: #666;
-          font-size: 11px;
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          gap: 6px;
-        }
         
         .content {
           padding: 30px 40px;
@@ -427,27 +404,6 @@ export const generatePDF = (
               <div>${company.adresa}</div>
               <div>OIB: ${company.oib}</div>
             </div>
-          </div>
-        </div>
-        <div class="offer-badge-section">
-          <div class="offer-badge">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            Ponuda ${offerNumber}
-          </div>
-          <div class="offer-date">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            ${formatDate(offer.created_at)}
           </div>
         </div>
       </div>
