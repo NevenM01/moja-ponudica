@@ -347,13 +347,12 @@ export const generatePDF = (
         
         @media print {
           @page { 
-            margin: 15mm; 
+            margin: 10mm 15mm 15mm 15mm; 
             size: A4;
-            @bottom-center {
-              content: "Stranica " counter(page) " od " counter(pages);
-              font-size: 9px;
-              color: #999;
-            }
+          }
+          html {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           body { padding: 0; }
           
