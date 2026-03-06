@@ -44,8 +44,8 @@ serve(async (req) => {
       throw new Error('Samo administratori mogu slati pozivnice');
     }
 
-    // Get the email and resend flag from the request body
-    const { email, resend } = await req.json();
+    // Get the email, resend flag and optional tenant_id from the request body
+    const { email, resend, tenant_id: tenantId } = await req.json();
     if (!email || !email.trim()) {
       throw new Error('Email adresa je obavezna');
     }
@@ -97,19 +97,27 @@ serve(async (req) => {
 
     console.log('Invitation sent successfully to:', normalizedEmail, resend ? '(resend)' : '');
 
-    // Save the invitation to our invitations table (only for new invitations)
+    // Save or update the invitation in our invitations table
     if (!resend) {
       const { error: insertError } = await supabaseAdmin
         .from('invitations')
         .insert({
           email: normalizedEmail,
           invited_by: user.id,
-          status: 'pending'
+          status: 'pending',
+          ...(tenantId && { tenant_id: tenantId }),
         });
 
       if (insertError) {
         console.error('Error saving invitation:', insertError);
       }
+    } else if (tenantId) {
+      // On resend, update tenant_id on existing pending invitation if provided
+      await supabaseAdmin
+        .from('invitations')
+        .update({ tenant_id: tenantId })
+        .eq('email', normalizedEmail)
+        .eq('status', 'pending');
     }
 
     return new Response(

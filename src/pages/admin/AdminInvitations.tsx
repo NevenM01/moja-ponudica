@@ -15,10 +15,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ArrowLeft, Mail, Send, RotateCw, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
 import { toast } from 'sonner';
+
+interface Tenant {
+  id: string;
+  naziv: string | null;
+  slug: string | null;
+}
 
 interface Invitation {
   id: string;
@@ -26,15 +39,26 @@ interface Invitation {
   status: string;
   created_at: string;
   accepted_at: string | null;
+  tenant_id: string | null;
 }
 
 const AdminInvitations = () => {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
+  const [selectedTenantId, setSelectedTenantId] = useState<string>('');
   const [sending, setSending] = useState(false);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const fetchTenants = async () => {
+    const { data } = await supabase
+      .from('tenants')
+      .select('id, naziv, slug')
+      .order('naziv');
+    setTenants(data ?? []);
+  };
 
   const fetchInvitations = async () => {
     const { data, error } = await supabase
@@ -51,6 +75,7 @@ const AdminInvitations = () => {
   };
 
   useEffect(() => {
+    fetchTenants();
     fetchInvitations();
   }, []);
 
@@ -65,10 +90,11 @@ const AdminInvitations = () => {
     setSending(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
       const response = await supabase.functions.invoke('invite-user', {
-        body: { email: email.trim() }
+        body: {
+          email: email.trim(),
+          ...(selectedTenantId && { tenant_id: selectedTenantId }),
+        },
       });
 
       if (response.error) {
@@ -81,6 +107,7 @@ const AdminInvitations = () => {
 
       toast.success('Pozivnica uspješno poslana!');
       setEmail('');
+      setSelectedTenantId('');
       fetchInvitations();
     } catch (error: any) {
       console.error('Error sending invitation:', error);
@@ -95,7 +122,13 @@ const AdminInvitations = () => {
 
     try {
       const response = await supabase.functions.invoke('invite-user', {
-        body: { email: invitation.email, resend: true }
+        body: {
+          email: invitation.email,
+          resend: true,
+          ...((selectedTenantId || invitation.tenant_id) && {
+            tenant_id: selectedTenantId || invitation.tenant_id,
+          }),
+        },
       });
 
       if (response.error) {
@@ -158,6 +191,12 @@ const AdminInvitations = () => {
     }
   };
 
+  const getTenantName = (tenantId: string | null) => {
+    if (!tenantId) return '—';
+    const t = tenants.find((x) => x.id === tenantId);
+    return t?.naziv ?? t?.slug ?? tenantId.slice(0, 8);
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -179,25 +218,46 @@ const AdminInvitations = () => {
           <CardHeader>
             <CardTitle>Nova pozivnica</CardTitle>
             <CardDescription>
-              Unesite email adresu korisnika kojeg želite pozvati
+              Unesite email i po želji odaberite tenant. Kad korisnik prihvati pozivnicu, tenant će mu se automatski dodijeliti.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSendInvitation} className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <Label htmlFor="email" className="sr-only">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@primjer.hr"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+            <form onSubmit={handleSendInvitation} className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="email" className="sr-only">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="email@primjer.hr"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="w-full sm:w-[220px]">
+                  <Label htmlFor="tenant" className="sr-only">Tenant</Label>
+                  <Select
+                    value={selectedTenantId || 'none'}
+                    onValueChange={(v) => setSelectedTenantId(v === 'none' ? '' : v)}
+                  >
+                    <SelectTrigger id="tenant">
+                      <SelectValue placeholder="Tenant (opcionalno)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Bez tenanta</SelectItem>
+                      {tenants.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.naziv ?? t.slug ?? t.id.slice(0, 8)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button type="submit" disabled={sending} className="sm:self-end">
+                  <Send className="h-4 w-4 mr-2" />
+                  {sending ? 'Slanje...' : 'Pošalji pozivnicu'}
+                </Button>
               </div>
-              <Button type="submit" disabled={sending}>
-                <Send className="h-4 w-4 mr-2" />
-                {sending ? 'Slanje...' : 'Pošalji pozivnicu'}
-              </Button>
             </form>
           </CardContent>
         </Card>
@@ -218,6 +278,7 @@ const AdminInvitations = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Email</TableHead>
+                        <TableHead>Tenant</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Poslano</TableHead>
                         <TableHead>Prihvaćeno</TableHead>
@@ -228,6 +289,7 @@ const AdminInvitations = () => {
                       {invitations.map((invitation) => (
                         <TableRow key={invitation.id}>
                           <TableCell className="font-medium">{invitation.email}</TableCell>
+                          <TableCell className="text-muted-foreground">{getTenantName(invitation.tenant_id)}</TableCell>
                           <TableCell>{getStatusBadge(invitation.status)}</TableCell>
                           <TableCell>{formatDate(invitation.created_at)}</TableCell>
                           <TableCell>{formatDate(invitation.accepted_at)}</TableCell>
@@ -270,6 +332,11 @@ const AdminInvitations = () => {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{invitation.email}</span>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Tenant: {getTenantName(invitation.tenant_id)}
+                          </div>
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               {getStatusBadge(invitation.status)}
                               <div className="flex gap-1">

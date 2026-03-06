@@ -78,8 +78,10 @@ const AppLayout = ({
                 <Building2 className="h-5 md:h-6 w-5 md:w-6 text-muted-foreground" />
               </div>}
             <div className="flex flex-col">
-              <span className="text-[8px] text-muted-foreground leading-tight">powered by</span>
               <span className="text-xs font-medium text-foreground leading-tight">MojaPonudica</span>
+              <span className="text-[8px] text-muted-foreground leading-tight">
+                powered by <span className="text-gray-900 dark:text-white font-medium">NMS</span><span className="text-purple-600 dark:text-purple-400 font-medium">olux</span>
+              </span>
             </div>
           </Link>
 

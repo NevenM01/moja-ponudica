@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
-import { Upload, X, Key } from 'lucide-react';
+import { clearOnboardingDone } from '@/lib/onboarding';
+import { Upload, X, Key, BookOpen } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 interface CompanyProfile {
   id?: string;
@@ -283,11 +284,28 @@ const Profile = () => {
       setPasswordLoading(false);
     }
   };
+  const handleShowTutorialAgain = () => {
+    if (user?.id) {
+      clearOnboardingDone(user.id);
+      navigate('/');
+    }
+  };
+
   return <AppLayout>
       <div className="max-w-4xl mx-auto">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <CardTitle>Profil tvrtke</CardTitle>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={handleShowTutorialAgain}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Ponovno prikaži uvod
+            </Button>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

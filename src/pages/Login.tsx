@@ -26,12 +26,26 @@ const Login = () => {
       });
       if (error) throw error;
 
-      // Auto-accept pending invitation for existing users
-      if (data.user?.email) {
+      // Auto-accept pending invitation and assign tenant to profile
+      if (data.user?.email && data.user?.id) {
+        const { data: pendingInvitation } = await supabase
+          .from('invitations')
+          .select('id, tenant_id')
+          .eq('email', data.user.email)
+          .eq('status', 'pending')
+          .maybeSingle();
+
         await supabase.from('invitations').update({
           status: 'accepted',
           accepted_at: new Date().toISOString()
         }).eq('email', data.user.email).eq('status', 'pending');
+
+        if (pendingInvitation?.tenant_id) {
+          await supabase
+            .from('profiles')
+            .update({ tenant_id: pendingInvitation.tenant_id })
+            .eq('id', data.user.id);
+        }
       }
       navigate('/');
     } catch (error: any) {

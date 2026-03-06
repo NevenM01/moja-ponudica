@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Mail, FileText, Shield } from 'lucide-react';
+import { Users, Mail, FileText, Shield, Building2 } from 'lucide-react';
 
 interface Stats {
   totalUsers: number;
@@ -143,6 +143,22 @@ const AdminDashboard = () => {
               <CardContent>
                 <p className="text-muted-foreground text-sm">
                   Pošaljite pozivnice novim korisnicima i pratite status
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link to="/admin/tenanti">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Kreiraj tenant
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  Kreirajte nove tenante (organizacije) i upravljajte listom tenanata
                 </p>
               </CardContent>
             </Card>

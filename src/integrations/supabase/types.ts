@@ -437,6 +437,7 @@ export type Database = {
           naziv: string
           primary_color: string | null
           slug: string
+          trial_ends_at: string | null
         }
         Insert: {
           accent_color?: string | null
@@ -447,6 +448,7 @@ export type Database = {
           naziv: string
           primary_color?: string | null
           slug: string
+          trial_ends_at?: string | null
         }
         Update: {
           accent_color?: string | null
@@ -457,6 +459,7 @@ export type Database = {
           naziv?: string
           primary_color?: string | null
           slug?: string
+          trial_ends_at?: string | null
         }
         Relationships: []
       }

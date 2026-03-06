@@ -3,24 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <title>Moja Ponudica</title>
+    <meta name="description" content="Moja Ponudica – upravljanje ponudama" />
+    <meta name="author" content="Moja Ponudica" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="Lovable App" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <link rel="icon" type="image/x-icon" href="./favcon/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favcon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favcon/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./favcon/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./favcon/android-chrome-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="./favcon/android-chrome-512x512.png" />
+
+    <meta property="og:title" content="Moja Ponudica" />
+    <meta property="og:description" content="Moja Ponudica – upravljanje ponudama" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
   </head>
 
   <body>
     <div id="root"></div>
+    <script>
+      if (window.location.protocol === 'file:') {
+        document.getElementById('root').innerHTML = '<div style="padding: 2rem; font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; line-height: 1.6;"><h1 style="color: #333;">Otvoriš krivu datoteku</h1><p>Ova datoteka (<code>index.html</code> u korijenu) je izvorni HTML i ne radi direktno u pregledniku.</p><h2 style="color: #333; font-size: 1.1rem;">Da aplikacija radi preko file://:</h2><ol style="margin-left: 1.25rem;"><li>U terminalu: <code>cd D:\\moja-ponudica</code> pa <code>npm run build</code></li><li>U pregledniku otvori <strong>file:///D:/moja-ponudica/dist/index.html</strong> (folder <code>dist</code>, ne korijen)</li></ol><p style="margin-top: 1.5rem;">Ili pokreni dev poslužitelj: <code>npm run dev</code> i otvori <strong>http://localhost:8080</strong></p></div>';
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

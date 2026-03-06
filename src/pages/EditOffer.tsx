@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams, Link, useBlocker } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -7,11 +7,55 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Save, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import CompanyInfoBox from '@/components/CompanyInfoBox';
 import OfferItemsEditor, { OfferGroup, OfferItem } from '@/components/OfferItemsEditor';
+
+function normalizeFormState(
+  offerNumber: string,
+  clientNaziv: string,
+  clientOib: string,
+  clientAdresa: string,
+  objekatNaziv: string,
+  objekatOpis: string,
+  napomena: string,
+  groups: OfferGroup[]
+): string {
+  const payload = {
+    offerNumber,
+    clientNaziv,
+    clientOib,
+    clientAdresa,
+    objekatNaziv,
+    objekatOpis,
+    napomena,
+    groups: groups.map((g) => ({
+      naziv: g.naziv,
+      opis: g.opis ?? '',
+      redni_broj: g.redni_broj,
+      items: g.items.map((i) => ({
+        opis: i.opis,
+        jedinica: i.jedinica,
+        kolicina: i.kolicina,
+        cijena: i.cijena,
+        is_optional: i.is_optional ?? false,
+      })),
+    })),
+  };
+  return JSON.stringify(payload);
+}
 
 interface CompanyProfile {
   naziv_firme: string;
@@ -64,6 +108,9 @@ const EditOffer = () => {
   const [deletedItemIds, setDeletedItemIds] = useState<string[]>([]);
   const [originalGroupIds, setOriginalGroupIds] = useState<Set<string>>(new Set());
   const [originalItemIds, setOriginalItemIds] = useState<Set<string>>(new Set());
+
+  const initialSnapshotRef = useRef<string | null>(null);
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     if (user && id) {
@@ -172,6 +219,47 @@ const EditOffer = () => {
     setFetching(false);
   };
 
+  useEffect(() => {
+    if (!fetching && offerNumber && initialSnapshotRef.current === null) {
+      initialSnapshotRef.current = normalizeFormState(
+        offerNumber,
+        clientNaziv,
+        clientOib,
+        clientAdresa,
+        objekatNaziv,
+        objekatOpis,
+        napomena,
+        groups
+      );
+    }
+  }, [fetching, offerNumber, clientNaziv, clientOib, clientAdresa, objekatNaziv, objekatOpis, napomena, groups]);
+
+  const hasUnsavedChanges =
+    !submittedRef.current &&
+    initialSnapshotRef.current !== null &&
+    initialSnapshotRef.current !==
+      normalizeFormState(
+        offerNumber,
+        clientNaziv,
+        clientOib,
+        clientAdresa,
+        objekatNaziv,
+        objekatOpis,
+        napomena,
+        groups
+      );
+
+  const blocker = useBlocker(hasUnsavedChanges);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   const updateGroup = (groupId: string, field: 'naziv' | 'opis', value: string) => {
     setGroups(groups.map(g => g.id === groupId ? { ...g, [field]: value } : g));
   };
@@ -268,6 +356,7 @@ const EditOffer = () => {
       return;
     }
 
+    submittedRef.current = true;
     setLoading(true);
 
     try {
@@ -364,8 +453,10 @@ const EditOffer = () => {
       }
 
       toast({ title: 'Ponuda ažurirana!' });
+      submittedRef.current = true;
       navigate(`/ponuda/${id}`);
     } catch (error: any) {
+      submittedRef.current = false;
       toast({ title: 'Greška', description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -382,6 +473,33 @@ const EditOffer = () => {
 
   return (
     <AppLayout>
+      <AlertDialog open={blocker.state === 'blocked'}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Nespremljene promjene</AlertDialogTitle>
+            <AlertDialogDescription>
+              Nespremljene promjene će nestati. Jesi li siguran da želiš izaći?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                if (blocker.state === 'blocked') blocker.reset();
+              }}
+            >
+              Ostani
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (blocker.state === 'blocked') blocker.proceed();
+              }}
+            >
+              Izađi
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6 max-w-6xl mx-auto">
         <div className="flex items-center gap-4">
           <Link to={`/ponuda/${id}`}>

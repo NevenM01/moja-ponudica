@@ -2,11 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { createHashRouter, createRoutesFromElements, RouterProvider, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useTenant } from "@/hooks/useTenant";
 import Login from "./pages/Login";
+import TrialExpired from "./pages/TrialExpired";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import OfferList from "./pages/OfferList";
@@ -19,21 +21,43 @@ import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminInvitations from "./pages/admin/AdminInvitations";
+import AdminTenants from "./pages/admin/AdminTenants";
 import SetPassword from "./pages/SetPassword";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const LoginPage = () => {
   const { user, loading } = useAuth();
-  
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Učitavanje...</div>;
   }
-  
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+  return <Login />;
+};
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  const { isTrialExpired, loading: tenantLoading } = useTenant();
+  const { isAdmin, loading: adminLoading } = useAdmin();
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Učitavanje...</div>;
+  }
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
+  if (tenantLoading || adminLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Učitavanje...</div>;
+  }
+
+  if (isTrialExpired && !isAdmin) {
+    return <TrialExpired />;
+  }
+
   return <>{children}</>;
 };
 
@@ -56,16 +80,10 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AppRoutes = () => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Učitavanje...</div>;
-  }
-
-  return (
-    <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+const router = createHashRouter(
+  createRoutesFromElements(
+    <>
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/postavi-lozinku" element={<SetPassword />} />
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/ponude" element={<ProtectedRoute><OfferList /></ProtectedRoute>} />
@@ -75,16 +93,14 @@ const AppRoutes = () => {
       <Route path="/ponuda/:id/uredi" element={<ProtectedRoute><EditOffer /></ProtectedRoute>} />
       <Route path="/predlozak/:id/uredi" element={<ProtectedRoute><EditTemplate /></ProtectedRoute>} />
       <Route path="/p/:token" element={<OfferPreview />} />
-      
-      {/* Admin routes */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/korisnici" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+      <Route path="/admin/tenanti" element={<AdminRoute><AdminTenants /></AdminRoute>} />
       <Route path="/admin/pozivnice" element={<AdminRoute><AdminInvitations /></AdminRoute>} />
-      
       <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
+    </>
+  )
+);
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
@@ -92,11 +108,9 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <AppRoutes />
-          </AuthProvider>
-        </BrowserRouter>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>

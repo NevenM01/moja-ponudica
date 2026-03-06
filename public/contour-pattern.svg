@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <pattern id="contour-tile" x="0" y="0" width="800" height="800" patternUnits="userSpaceOnUse">
+      <!-- Flowing organic contour lines - white on transparent for CSS overlay -->
+      <g fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.35">
+        <!-- Outer flow -->
+        <path d="M0 200 Q200 100 400 150 T800 180 L800 220 Q600 240 400 220 T0 260 Z"/>
+        <path d="M0 320 Q150 280 350 300 T700 340 L800 320 L800 380 Q650 400 400 380 T0 400 Z"/>
+        <path d="M0 480 Q250 440 500 460 T800 500 L800 560 Q550 580 300 560 T0 520 Z"/>
+        <path d="M0 600 Q200 550 450 580 T800 620 L800 680 Q600 720 350 680 T0 640 Z"/>
+      </g>
+      <g fill="none" stroke="#ffffff" stroke-width="1" stroke-linecap="round" opacity="0.28">
+        <path d="M0 100 C150 80 250 120 400 100 S650 140 800 120 L800 160 C600 180 400 160 200 180 S0 160 0 100 Z"/>
+        <path d="M0 280 C180 260 320 300 500 280 S720 320 800 300 L800 340 C620 360 400 340 180 360 S0 320 0 280 Z"/>
+        <path d="M0 420 C200 400 350 440 550 420 S750 460 800 440 L800 480 C600 500 400 480 200 500 S0 460 0 420 Z"/>
+        <path d="M0 540 C220 520 380 560 600 540 S780 580 800 560 L800 600 C580 620 400 600 220 620 S0 580 0 540 Z"/>
+      </g>
+      <g fill="none" stroke="#ffffff" stroke-width="0.85" opacity="0.2">
+        <path d="M100 0 Q300 50 500 20 T800 80 L800 120 Q500 100 200 120 T0 60 Z"/>
+        <path d="M50 200 Q250 180 500 200 T800 220 L800 260 Q550 280 250 260 T0 240 Z"/>
+        <path d="M80 400 Q280 380 520 400 T800 420 L800 460 Q560 480 260 460 T0 440 Z"/>
+        <path d="M0 650 Q200 620 450 650 T800 700 L800 750 Q550 780 250 750 T0 700 Z"/>
+      </g>
+      <!-- Nested amoeboid shapes -->
+      <g fill="none" stroke="#ffffff" stroke-width="1" opacity="0.22">
+        <path d="M200 250 Q280 220 360 250 Q400 280 360 320 Q300 350 200 320 Q160 280 200 250 Z"/>
+        <path d="M450 350 Q530 320 620 360 Q680 400 620 460 Q540 500 450 460 Q400 420 450 350 Z"/>
+        <path d="M100 500 Q180 460 280 500 Q340 540 280 600 Q200 640 100 600 Q60 560 100 500 Z"/>
+        <path d="M550 150 Q640 120 720 170 Q760 230 700 280 Q620 320 550 270 Q520 210 550 150 Z"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="800" height="800" fill="url(#contour-tile)"/>
+</svg>

@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { FileText, TrendingUp, Plus, Trash2, Pencil, StickyNote, Check, X, Palette, CheckCircle, XCircle, Clock, BarChart3 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import AppLayout from '@/components/AppLayout';
+import { WelcomeTutorial } from '@/components/WelcomeTutorial';
+import { isOnboardingDone } from '@/lib/onboarding';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Note {
@@ -34,6 +36,7 @@ const MONTH_NAMES = ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', '
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [showTutorial, setShowTutorial] = useState(false);
   const [offerCount, setOfferCount] = useState<number | null>(null);
   const [acceptedCount, setAcceptedCount] = useState<number | null>(null);
   const [rejectedCount, setRejectedCount] = useState<number | null>(null);
@@ -50,6 +53,9 @@ const Dashboard = () => {
       fetchStats();
       fetchMonthlyData();
       loadNotes();
+      if (!isOnboardingDone(user.id)) {
+        setShowTutorial(true);
+      }
     }
   }, [user]);
 
@@ -158,6 +164,11 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
+      <WelcomeTutorial
+        open={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        userId={user?.id ?? ''}
+      />
       <div className="space-y-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>

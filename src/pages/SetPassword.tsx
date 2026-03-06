@@ -74,21 +74,31 @@ const SetPassword = () => {
         }
       } = await supabase.auth.getUser();
       console.log('SetPassword - Current user:', user?.email);
-      if (user?.email) {
-        // Update invitation status to accepted
+      if (user?.email && user?.id) {
+        // Get pending invitation to read tenant_id before updating
+        const { data: pendingInvitation } = await supabase
+          .from('invitations')
+          .select('id, tenant_id')
+          .eq('email', user.email)
+          .eq('status', 'pending')
+          .maybeSingle();
+
         const {
           error: inviteError,
-          data: inviteData
         } = await supabase.from('invitations').update({
           status: 'accepted',
           accepted_at: new Date().toISOString()
-        }).eq('email', user.email).eq('status', 'pending').select();
-        console.log('SetPassword - Invitation update result:', {
-          inviteData,
-          inviteError
-        });
+        }).eq('email', user.email).eq('status', 'pending');
         if (inviteError) {
           console.error('SetPassword - Error updating invitation:', inviteError);
+        }
+
+        // Automatically assign tenant to profile when invitation had tenant_id
+        if (pendingInvitation?.tenant_id) {
+          await supabase
+            .from('profiles')
+            .update({ tenant_id: pendingInvitation.tenant_id })
+            .eq('id', user.id);
         }
       }
       toast({

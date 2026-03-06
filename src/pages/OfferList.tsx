@@ -5,12 +5,28 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Eye, Trash2, CheckCircle, XCircle, Clock, Search } from 'lucide-react';
+import { Plus, Eye, Trash2, CheckCircle, XCircle, Clock, Search, FileEdit } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
 import { format } from 'date-fns';
+
+interface DraftOffer {
+  id: string;
+  offer_number: string;
+  client_naziv: string;
+  ukupno: number;
+  updated_at: string;
+}
+
+function formatDraftSavedAt(iso: string): string {
+  try {
+    return format(new Date(iso), 'dd.MM.yyyy. HH:mm');
+  } catch {
+    return iso;
+  }
+}
 
 interface Offer {
   id: string;
@@ -53,6 +69,7 @@ const OfferList = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [drafts, setDrafts] = useState<DraftOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -67,6 +84,7 @@ const OfferList = () => {
   useEffect(() => {
     if (user) {
       fetchOffers();
+      fetchDrafts();
     }
   }, [user]);
 
@@ -75,6 +93,7 @@ const OfferList = () => {
       .from('offers')
       .select('*')
       .eq('user_id', user?.id)
+      .neq('status', 'draft')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -83,6 +102,17 @@ const OfferList = () => {
       setOffers(data || []);
     }
     setLoading(false);
+  };
+
+  const fetchDrafts = async () => {
+    if (!user?.id) return;
+    const { data, error } = await supabase
+      .from('offers')
+      .select('id, offer_number, client_naziv, ukupno, updated_at')
+      .eq('user_id', user.id)
+      .eq('status', 'draft')
+      .order('updated_at', { ascending: false });
+    if (!error) setDrafts(data ?? []);
   };
 
   const handleDelete = async (id: string) => {
@@ -94,6 +124,16 @@ const OfferList = () => {
     } else {
       setOffers(offers.filter((o) => o.id !== id));
       toast({ title: 'Ponuda obrisana' });
+    }
+  };
+
+  const handleDeleteDraft = async (draftId: string) => {
+    const { error } = await supabase.from('offers').delete().eq('id', draftId).eq('status', 'draft');
+    if (error) {
+      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+    } else {
+      setDrafts((prev) => prev.filter((d) => d.id !== draftId));
+      toast({ title: 'Draft obrisan' });
     }
   };
 
@@ -110,17 +150,83 @@ const OfferList = () => {
           </Link>
         </CardHeader>
         <CardContent className="space-y-4">
-          {offers.length > 0 && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Pretraži po klijentu ili broju ponude..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+          {drafts.length > 0 && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+              <h3 className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                <FileEdit className="h-4 w-4" />
+                Draft
+              </h3>
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Broj ponude</TableHead>
+                      <TableHead>Klijent</TableHead>
+                      <TableHead>Spremljeno</TableHead>
+                      <TableHead className="text-right">Ukupno (€)</TableHead>
+                      <TableHead className="w-40"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {drafts.map((draft) => (
+                      <TableRow key={draft.id}>
+                        <TableCell className="font-medium">{draft.offer_number || '—'}</TableCell>
+                        <TableCell>{draft.client_naziv || '—'}</TableCell>
+                        <TableCell>{formatDraftSavedAt(draft.updated_at)}</TableCell>
+                        <TableCell className="text-right">{Number(draft.ukupno).toFixed(2)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Link to="/nova-ponuda" state={{ loadDraftId: draft.id }}>
+                              <Button variant="outline" size="sm">
+                                Nastavi uređivanje
+                              </Button>
+                            </Link>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteDraft(draft.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="md:hidden space-y-3">
+                {drafts.map((draft) => (
+                  <div key={draft.id} className="space-y-2">
+                    <div className="flex justify-between">
+                      <p className="font-medium text-sm">{draft.offer_number || 'Draft'}</p>
+                      <p className="font-bold text-primary">{Number(draft.ukupno).toFixed(2)} €</p>
+                    </div>
+                    <p className="text-muted-foreground text-sm">{draft.client_naziv || '—'}</p>
+                    <p className="text-xs text-muted-foreground">{formatDraftSavedAt(draft.updated_at)}</p>
+                    <div className="flex gap-2 pt-2">
+                      <Link to="/nova-ponuda" state={{ loadDraftId: draft.id }} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full">
+                          Nastavi uređivanje
+                        </Button>
+                      </Link>
+                      <Button variant="ghost" size="icon" onClick={() => handleDeleteDraft(draft.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
+
+          {/* Tražilica: po broju ponude i imenu klijenta */}
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Pretraži po broju ponude ili imenu klijenta..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
           {loading ? (
             <p className="text-muted-foreground">Učitavanje...</p>
           ) : offers.length === 0 ? (
