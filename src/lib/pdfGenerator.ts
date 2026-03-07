@@ -1,3 +1,5 @@
+import { getDisplayDomain, getFacebookDisplayLine, getInstagramDisplayLine } from './companyProfileDisplay';
+
 interface Offer {
   offer_number: string;
   client_naziv: string;
@@ -34,6 +36,9 @@ interface CompanyProfile {
   email: string;
   telefon: string;
   logo_url: string;
+  web_link?: string | null;
+  instagram_link?: string | null;
+  social_display_label?: string | null;
 }
 
 const formatNumber = (num: number) => {
@@ -403,6 +408,9 @@ export const generatePDF = (
             <div class="company-details">
               <div>${company.adresa}</div>
               <div>OIB: ${company.oib}</div>
+              ${company.web_link ? `<div><a href="${company.web_link}" target="_blank" style="color: #2563eb; text-decoration: underline;">Web: ${getDisplayDomain(company.web_link)}</a></div>` : ''}
+              ${getInstagramDisplayLine(company.instagram_link) ? `<div>${getInstagramDisplayLine(company.instagram_link)}</div>` : ''}
+              ${getFacebookDisplayLine(company) ? `<div>${getFacebookDisplayLine(company)}</div>` : ''}
             </div>
           </div>
         </div>

@@ -65,6 +65,9 @@ interface CompanyProfile {
   iban: string;
   email: string;
   telefon: string;
+  web_link?: string | null;
+  instagram_link?: string | null;
+  social_display_label?: string | null;
 }
 
 interface Template {
@@ -376,7 +379,7 @@ const NewOffer = () => {
   const fetchCompanyProfile = async () => {
     const { data } = await supabase
       .from('company_profiles')
-      .select('naziv_firme, oib, adresa, iban, email, telefon')
+      .select('naziv_firme, oib, adresa, iban, email, telefon, web_link, instagram_link, social_display_label')
       .eq('user_id', user?.id)
       .maybeSingle();
 

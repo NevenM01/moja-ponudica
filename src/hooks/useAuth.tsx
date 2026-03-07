@@ -28,9 +28,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Redirect invited users to set password page
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && window.location.hash.includes('type=invite'))) {
-        window.location.href = '/postavi-lozinku';
+      // Redirect to set password: recovery link or invite (detected via pending invitation)
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.hash = '#/postavi-lozinku';
+        return;
+      }
+      if (event === 'SIGNED_IN' && session?.user?.email) {
+        supabase
+          .from('invitations')
+          .select('id')
+          .eq('email', session.user.email)
+          .eq('status', 'pending')
+          .maybeSingle()
+          .then(({ data }) => {
+            if (data) {
+              window.location.hash = '#/postavi-lozinku';
+            }
+          });
       }
     });
 

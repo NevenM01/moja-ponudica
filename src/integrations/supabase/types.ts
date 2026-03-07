@@ -21,13 +21,16 @@ export type Database = {
           email: string | null
           iban: string | null
           id: string
+          instagram_link: string | null
           logo_url: string | null
           naziv_firme: string
           oib: string
+          social_display_label: string | null
           telefon: string | null
           tenant_id: string | null
           updated_at: string
           user_id: string
+          web_link: string | null
         }
         Insert: {
           adresa: string
@@ -35,13 +38,16 @@ export type Database = {
           email?: string | null
           iban?: string | null
           id?: string
+          instagram_link?: string | null
           logo_url?: string | null
           naziv_firme: string
           oib: string
+          social_display_label?: string | null
           telefon?: string | null
           tenant_id?: string | null
           updated_at?: string
           user_id: string
+          web_link?: string | null
         }
         Update: {
           adresa?: string
@@ -49,13 +55,16 @@ export type Database = {
           email?: string | null
           iban?: string | null
           id?: string
+          instagram_link?: string | null
           logo_url?: string | null
           naziv_firme?: string
           oib?: string
+          social_display_label?: string | null
           telefon?: string | null
           tenant_id?: string | null
           updated_at?: string
           user_id?: string
+          web_link?: string | null
         }
         Relationships: [
           {
@@ -462,6 +471,38 @@ export type Database = {
           trial_ends_at?: string | null
         }
         Relationships: []
+      }
+      tenant_features: {
+        Row: {
+          id: string
+          tenant_id: string
+          feature_key: string
+          enabled: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          feature_key: string
+          enabled?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          feature_key?: string
+          enabled?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_features_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       user_roles: {
         Row: {

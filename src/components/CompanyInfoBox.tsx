@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Globe } from 'lucide-react';
+import { getDisplayDomain, getFacebookDisplayLine, getInstagramDisplayLine } from '@/lib/companyProfileDisplay';
 
 interface CompanyProfile {
   naziv_firme: string;
@@ -8,6 +10,9 @@ interface CompanyProfile {
   iban: string;
   email: string;
   telefon: string;
+  web_link?: string | null;
+  instagram_link?: string | null;
+  social_display_label?: string | null;
 }
 
 interface CompanyInfoBoxProps {
@@ -25,6 +30,9 @@ const CompanyInfoBox = ({ profile }: CompanyInfoBoxProps) => {
       </div>
     );
   }
+
+  const instagramLine = getInstagramDisplayLine(profile.instagram_link);
+  const facebookLine = getFacebookDisplayLine(profile);
 
   return (
     <div className="bg-muted rounded-lg p-4 border border-border">
@@ -46,6 +54,22 @@ const CompanyInfoBox = ({ profile }: CompanyInfoBoxProps) => {
           <p className="font-medium">{profile.iban || '-'}</p>
         </div>
       </div>
+      {(profile.web_link || instagramLine || facebookLine) && (
+        <div className="flex flex-wrap gap-3 mt-2 pt-2 border-t border-border">
+          {profile.web_link && (
+            <a href={profile.web_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+              <Globe className="h-3.5 w-3.5" />
+              {getDisplayDomain(profile.web_link)}
+            </a>
+          )}
+          {instagramLine && (
+            <span className="text-sm text-muted-foreground">{instagramLine}</span>
+          )}
+          {facebookLine && (
+            <span className="text-sm text-muted-foreground">{facebookLine}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

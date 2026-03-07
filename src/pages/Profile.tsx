@@ -11,6 +11,7 @@ import AppLayout from '@/components/AppLayout';
 import { clearOnboardingDone } from '@/lib/onboarding';
 import { Upload, X, Key, BookOpen } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 interface CompanyProfile {
   id?: string;
   naziv_firme: string;
@@ -20,6 +21,9 @@ interface CompanyProfile {
   email: string;
   telefon: string;
   logo_url: string;
+  web_link?: string;
+  instagram_link?: string;
+  social_display_label?: string;
 }
 const Profile = () => {
   const {
@@ -44,7 +48,10 @@ const Profile = () => {
     iban: '',
     email: '',
     telefon: '',
-    logo_url: ''
+    logo_url: '',
+    web_link: '',
+    instagram_link: '',
+    social_display_label: ''
   });
   useEffect(() => {
     if (user) {
@@ -68,7 +75,12 @@ const Profile = () => {
       error
     } = await supabase.from('company_profiles').select('*').eq('user_id', user?.id).maybeSingle();
     if (data) {
-      setProfile(data);
+      setProfile({
+        ...data,
+        web_link: data.web_link ?? '',
+        instagram_link: data.instagram_link ?? '',
+        social_display_label: data.social_display_label ?? ''
+      });
     }
   };
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,7 +185,10 @@ const Profile = () => {
           iban: profile.iban,
           email: profile.email,
           telefon: profile.telefon,
-          logo_url: profile.logo_url
+          logo_url: profile.logo_url,
+          web_link: profile.web_link || null,
+          instagram_link: profile.instagram_link || null,
+          social_display_label: profile.social_display_label || null
         }).eq('id', profile.id);
         if (error) throw error;
       } else {
@@ -199,7 +214,10 @@ const Profile = () => {
           iban: profile.iban,
           email: profile.email,
           telefon: profile.telefon,
-          logo_url: profile.logo_url
+          logo_url: profile.logo_url,
+          web_link: profile.web_link || null,
+          instagram_link: profile.instagram_link || null,
+          social_display_label: profile.social_display_label || null
         });
         if (error) throw error;
       }
@@ -352,6 +370,41 @@ const Profile = () => {
                   telefon: e.target.value
                 })} />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="web_link">Web stranica</Label>
+                  <Input id="web_link" type="url" value={profile.web_link ?? ''} onChange={e => setProfile({
+                  ...profile,
+                  web_link: e.target.value
+                })} placeholder="https://..." />
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram_link">Instagram</Label>
+                      <Input id="instagram_link" type="text" value={profile.instagram_link ?? ''} onChange={e => setProfile({
+                      ...profile,
+                      instagram_link: e.target.value
+                    })} placeholder="npr. korisnicko ili @korisnicko" autoComplete="off" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={6} className="max-w-xs">
+                    Unesite Instagram korisničko ime. Možete s @ (npr. @korisnicko) ili bez. Na ponudi će se prikazati kao IG: @korisnicko.
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="space-y-2">
+                      <Label htmlFor="social_display_label">Facebook</Label>
+                      <Input id="social_display_label" type="text" value={profile.social_display_label ?? ''} onChange={e => setProfile({
+                      ...profile,
+                      social_display_label: e.target.value
+                    })} placeholder="npr. Ime Prezime" autoComplete="off" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={6} className="max-w-xs">
+                    Unesite ime koje želite prikazati na ponudi (npr. Ime Prezime). Prikazat će se kao FB: Ime Prezime.
+                  </TooltipContent>
+                </Tooltip>
                 <div className="space-y-2">
                   <Label>Logo tvrtke</Label>
                   <div className="flex items-center gap-4">

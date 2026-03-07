@@ -64,6 +64,9 @@ interface CompanyProfile {
   iban: string;
   email: string;
   telefon: string;
+  web_link?: string | null;
+  instagram_link?: string | null;
+  social_display_label?: string | null;
 }
 
 const createNewItem = (groupId: string): OfferItem => ({
@@ -125,7 +128,7 @@ const EditOffer = () => {
       supabase.from('offers').select('*').eq('id', id).single(),
       supabase.from('offer_item_groups').select('*').eq('offer_id', id).order('redni_broj'),
       supabase.from('offer_items').select('*').eq('offer_id', id),
-      supabase.from('company_profiles').select('naziv_firme, oib, adresa, iban, email, telefon').eq('user_id', user?.id).maybeSingle(),
+      supabase.from('company_profiles').select('naziv_firme, oib, adresa, iban, email, telefon, web_link, instagram_link, social_display_label').eq('user_id', user?.id).maybeSingle(),
     ]);
 
     console.log('EditOffer: Offer result:', offerResult);

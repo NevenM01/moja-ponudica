@@ -33,10 +33,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Building2, Plus, Calendar, Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, Building2, Plus, Calendar, Trash2, Sliders } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
+import { TENANT_FEATURE_KEYS, TENANT_FEATURES_TABLE, TENANT_FEATURES_CONFLICT, type TenantFeatureKey } from '@/lib/tenantFeatures';
 
 interface Tenant {
   id: string;
@@ -66,6 +68,10 @@ const AdminTenants = () => {
   const [updatingTrial, setUpdatingTrial] = useState(false);
   const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [featuresTenant, setFeaturesTenant] = useState<Tenant | null>(null);
+  const [featureToggles, setFeatureToggles] = useState<Record<string, boolean>>({});
+  const [featuresLoading, setFeaturesLoading] = useState(false);
+  const [featureToggling, setFeatureToggling] = useState(false);
 
   const fetchTenants = async () => {
     const { data, error } = await supabase
@@ -198,6 +204,50 @@ const AdminTenants = () => {
       toast.error(err instanceof Error ? err.message : 'Greška pri brisanju');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const openFeaturesDialog = async (t: Tenant) => {
+    setFeaturesTenant(t);
+    setFeaturesLoading(true);
+    setFeatureToggles({});
+    try {
+      const { data } = await supabase
+        .from(TENANT_FEATURES_TABLE)
+        .select('feature_key, enabled')
+        .eq('tenant_id', t.id);
+      const map: Record<string, boolean> = {};
+      for (const row of data ?? []) {
+        map[row.feature_key] = row.enabled;
+      }
+      setFeatureToggles(map);
+    } catch (err) {
+      toast.error('Greška pri učitavanju opcija');
+    } finally {
+      setFeaturesLoading(false);
+    }
+  };
+
+  const closeFeaturesDialog = () => {
+    setFeaturesTenant(null);
+    setFeatureToggles({});
+  };
+
+  const handleFeatureToggle = async (featureKey: TenantFeatureKey, enabled: boolean) => {
+    if (!featuresTenant) return;
+    setFeatureToggling(true);
+    try {
+      const { error } = await supabase.from(TENANT_FEATURES_TABLE).upsert(
+        { tenant_id: featuresTenant.id, feature_key: featureKey, enabled },
+        { onConflict: TENANT_FEATURES_CONFLICT }
+      );
+      if (error) throw error;
+      setFeatureToggles((prev) => ({ ...prev, [featureKey]: enabled }));
+      toast.success(enabled ? 'Opcija uključena' : 'Opcija isključena');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Greška');
+    } finally {
+      setFeatureToggling(false);
     }
   };
 
@@ -366,6 +416,38 @@ const AdminTenants = () => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          <Dialog open={!!featuresTenant} onOpenChange={(open) => !open && closeFeaturesDialog()}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Opcije tenanta</DialogTitle>
+                <DialogDescription>
+                  Uključite ili isključite opcije za &quot;{featuresTenant?.naziv ?? featuresTenant?.slug ?? ''}&quot;. Korisnici tog tenanta vide samo uključene opcije.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                {featuresLoading ? (
+                  <p className="text-muted-foreground">Učitavanje...</p>
+                ) : (
+                  <div className="space-y-4">
+                    {TENANT_FEATURE_KEYS.map(({ key, label }) => (
+                      <div key={key} className="flex items-center justify-between gap-4">
+                        <Label htmlFor={`feat-${key}`} className="flex-1 cursor-pointer">
+                          {label}
+                        </Label>
+                        <Switch
+                          id={`feat-${key}`}
+                          checked={featureToggles[key] === true}
+                          onCheckedChange={(checked) => handleFeatureToggle(key, checked)}
+                          disabled={featureToggling}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <Card>
@@ -405,6 +487,14 @@ const AdminTenants = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openFeaturesDialog(t)}
+                              title="Opcije (features)"
+                            >
+                              <Sliders className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"

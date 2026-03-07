@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle, XCircle, Loader2, FileText, Building2, User, Calendar, CreditCard, Download } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, FileText, Building2, User, Calendar, CreditCard, Download, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { generatePDF } from "@/lib/pdfGenerator";
+import { getDisplayDomain, getFacebookDisplayLine, getInstagramDisplayLine } from "@/lib/companyProfileDisplay";
 
 interface Offer {
   id: string;
@@ -50,6 +51,9 @@ interface CompanyProfile {
   telefon: string | null;
   iban: string | null;
   logo_url: string | null;
+  web_link?: string | null;
+  instagram_link?: string | null;
+  social_display_label?: string | null;
 }
 
 const OfferPreview = () => {
@@ -139,6 +143,7 @@ const OfferPreview = () => {
   }
 
   if (error || !offer) {
+    const isDev = import.meta.env.DEV;
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
         <Card className="p-8 text-center max-w-md">
@@ -147,6 +152,11 @@ const OfferPreview = () => {
           <p className="text-muted-foreground">
             Link koji ste otvorili nije valjan ili je ponuda uklonjena.
           </p>
+          {isDev && error && (
+            <p className="mt-3 text-xs text-muted-foreground font-mono break-all">
+              {error}
+            </p>
+          )}
         </Card>
       </div>
     );
@@ -200,6 +210,24 @@ const OfferPreview = () => {
                   <h2 className="font-semibold text-lg">{company?.naziv_firme || 'Nepoznata tvrtka'}</h2>
                   {company?.adresa && <p className="text-sm text-muted-foreground">{company.adresa}</p>}
                   {company?.oib && <p className="text-sm text-muted-foreground">OIB: {company.oib}</p>}
+                  <div className="flex flex-wrap gap-3 mt-1">
+                    {company?.web_link && (
+                      <a href={company.web_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                        <Globe className="h-3.5 w-3.5" />
+                        {getDisplayDomain(company.web_link)}
+                      </a>
+                    )}
+                    {getInstagramDisplayLine(company?.instagram_link) && (
+                      <span className="text-sm text-muted-foreground">
+                        {getInstagramDisplayLine(company?.instagram_link)}
+                      </span>
+                    )}
+                    {getFacebookDisplayLine(company) && (
+                      <span className="text-sm text-muted-foreground">
+                        {getFacebookDisplayLine(company)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

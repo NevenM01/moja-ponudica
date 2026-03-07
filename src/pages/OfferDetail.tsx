@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTenantFeatures } from '@/hooks/useTenantFeatures';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Download, Pencil, Link2, Check, FileText, Building2, User, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Download, Pencil, Link2, Check, FileText, Building2, User, Calendar, CheckCircle, XCircle, Clock, Globe } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { generatePDF } from '@/lib/pdfGenerator';
+import { getDisplayDomain, getFacebookDisplayLine, getInstagramDisplayLine } from '@/lib/companyProfileDisplay';
 import { toast } from 'sonner';
 
 interface Offer {
@@ -48,11 +50,15 @@ interface CompanyProfile {
   email: string;
   telefon: string;
   logo_url: string;
+  web_link?: string | null;
+  instagram_link?: string | null;
+  social_display_label?: string | null;
 }
 
 const OfferDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { isFeatureEnabled } = useTenantFeatures();
   const [offer, setOffer] = useState<Offer | null>(null);
   const [items, setItems] = useState<OfferItem[]>([]);
   const [groups, setGroups] = useState<OfferGroup[]>([]);
@@ -94,7 +100,7 @@ const OfferDetail = () => {
 
   const handleCopyLink = async () => {
     if (!offer?.share_token) return;
-    const url = `${window.location.origin}/p/${offer.share_token}`;
+    const url = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}#/p/${offer.share_token}`;
     await navigator.clipboard.writeText(url);
     setLinkCopied(true);
     toast.success('Link kopiran u međuspremnik');
@@ -332,10 +338,12 @@ const OfferDetail = () => {
               </Button>
             </div>
 
-            <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none">
-              {linkCopied ? <Check className="h-4 w-4 mr-1 sm:mr-2" /> : <Link2 className="h-4 w-4 mr-1 sm:mr-2" />}
-              {linkCopied ? 'Kopirano' : 'Link'}
-            </Button>
+            {isFeatureEnabled('offer_preview_link') && (
+              <Button variant="outline" size="sm" onClick={handleCopyLink} className="flex-1 sm:flex-none">
+                {linkCopied ? <Check className="h-4 w-4 mr-1 sm:mr-2" /> : <Link2 className="h-4 w-4 mr-1 sm:mr-2" />}
+                {linkCopied ? 'Kopirano' : 'Link'}
+              </Button>
+            )}
             {offer.status !== 'accepted' && (
               <Link to={`/ponuda/${id}/uredi`} className="flex-1 sm:flex-none">
                 <Button variant="outline" size="sm" className="w-full">
@@ -373,6 +381,24 @@ const OfferDetail = () => {
                   <h2 className="font-semibold text-lg">{companyProfile?.naziv_firme || 'Nepoznata tvrtka'}</h2>
                   {companyProfile?.adresa && <p className="text-sm text-muted-foreground">{companyProfile.adresa}</p>}
                   {companyProfile?.oib && <p className="text-sm text-muted-foreground">OIB: {companyProfile.oib}</p>}
+                  <div className="flex flex-wrap gap-3 mt-1">
+                    {companyProfile?.web_link && (
+                      <a href={companyProfile.web_link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                        <Globe className="h-3.5 w-3.5" />
+                        {getDisplayDomain(companyProfile.web_link)}
+                      </a>
+                    )}
+                    {getInstagramDisplayLine(companyProfile?.instagram_link) && (
+                      <span className="text-sm text-muted-foreground">
+                        {getInstagramDisplayLine(companyProfile?.instagram_link)}
+                      </span>
+                    )}
+                    {getFacebookDisplayLine(companyProfile) && (
+                      <span className="text-sm text-muted-foreground">
+                        {getFacebookDisplayLine(companyProfile)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
