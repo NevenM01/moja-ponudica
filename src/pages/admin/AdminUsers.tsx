@@ -99,15 +99,12 @@ const AdminUsers = () => {
       return;
     }
 
-    // Fetch offer counts per user
-    const { data: offers } = await supabase
-      .from('offers')
-      .select('user_id');
-
-    const offerCounts = offers?.reduce((acc, offer) => {
-      acc[offer.user_id] = (acc[offer.user_id] || 0) + 1;
+    // Fetch offer counts per user (admin-only RPC, bypasses RLS)
+    const { data: offerCountRows } = await supabase.rpc('get_offer_counts_for_admin');
+    const offerCounts = (offerCountRows ?? []).reduce((acc, row: { user_id: string; offer_count: number }) => {
+      acc[row.user_id] = Number(row.offer_count);
       return acc;
-    }, {} as Record<string, number>) || {};
+    }, {} as Record<string, number>);
 
     const usersWithCounts = profiles?.map(profile => ({
       ...profile,

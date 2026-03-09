@@ -530,6 +530,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_offer_counts_for_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: { user_id: string; offer_count: number }[]
+      }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
