@@ -22,22 +22,19 @@ serve(async (req) => {
     );
 
     // Execute a simple SELECT query to keep the database active
-    const { count, error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from("profiles")
-      .select("*", { count: "exact", head: true });
+      .select("id", { head: true, count: "exact" });
 
     if (error) {
       console.error("Database query error:", error);
       throw error;
     }
 
-    console.log(`Keep-alive query successful. Profile count: ${count}`);
-
     const response = {
       status: "ok",
       keepAlive: true,
       timestamp: new Date().toISOString(),
-      profileCount: count,
     };
 
     return new Response(JSON.stringify(response), {

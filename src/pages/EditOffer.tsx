@@ -122,18 +122,12 @@ const EditOffer = () => {
   }, [user, id]);
 
   const fetchData = async () => {
-    console.log('EditOffer: Fetching data for offer:', id, 'user:', user?.id);
-    
     const [offerResult, groupsResult, itemsResult, profileResult] = await Promise.all([
       supabase.from('offers').select('*').eq('id', id).single(),
       supabase.from('offer_item_groups').select('*').eq('offer_id', id).order('redni_broj'),
       supabase.from('offer_items').select('*').eq('offer_id', id),
       supabase.from('company_profiles').select('naziv_firme, oib, adresa, iban, email, telefon, web_link, instagram_link, social_display_label').eq('user_id', user?.id).maybeSingle(),
     ]);
-
-    console.log('EditOffer: Offer result:', offerResult);
-    console.log('EditOffer: Groups result:', groupsResult);
-    console.log('EditOffer: Items result:', itemsResult);
 
     if (offerResult.error) {
       console.error('EditOffer: Offer fetch error:', offerResult.error);

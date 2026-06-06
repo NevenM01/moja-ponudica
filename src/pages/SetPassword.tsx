@@ -73,7 +73,6 @@ const SetPassword = () => {
           user
         }
       } = await supabase.auth.getUser();
-      console.log('SetPassword - Current user:', user?.email);
       if (user?.email && user?.id) {
         // Get pending invitation to read tenant_id before updating
         const { data: pendingInvitation } = await supabase
