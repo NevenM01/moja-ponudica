@@ -73,22 +73,31 @@ const OfferDetail = () => {
   }, [user, id]);
 
   const fetchData = async () => {
-    const [offerResult, itemsResult, groupsResult, profileResult] = await Promise.all([
+    const [offerResult, itemsResult, groupsResult] = await Promise.all([
       supabase.from('offers').select('*').eq('id', id).single(),
       supabase.from('offer_items').select('*').eq('offer_id', id),
       supabase.from('offer_item_groups').select('*').eq('offer_id', id).order('redni_broj'),
-      supabase.from('company_profiles').select('*').eq('user_id', user?.id).maybeSingle(),
     ]);
 
     if (offerResult.error) {
       toast.error(offerResult.error.message);
-    } else {
-      setOffer(offerResult.data);
+      setItems(itemsResult.data || []);
+      setGroups(groupsResult.data || []);
+      setLoading(false);
+      return;
     }
 
+    setOffer(offerResult.data);
     setItems(itemsResult.data || []);
     setGroups(groupsResult.data || []);
-    setCompanyProfile(profileResult.data);
+
+    const { data: profileData } = await supabase
+      .from('company_profiles')
+      .select('*')
+      .eq('user_id', offerResult.data.user_id)
+      .maybeSingle();
+
+    setCompanyProfile(profileData);
     setLoading(false);
   };
 
