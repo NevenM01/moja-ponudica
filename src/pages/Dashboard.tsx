@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTenant } from '@/hooks/useTenant';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,8 @@ interface Note {
   id: string;
   text: string;
   color: string;
-  createdAt: string;
+  created_at: string;
+  updated_by_email: string | null;
 }
 
 interface MonthlyData {
@@ -36,6 +38,7 @@ const MONTH_NAMES = ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', '
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const [showTutorial, setShowTutorial] = useState(false);
   const [offerCount, setOfferCount] = useState<number | null>(null);
   const [acceptedCount, setAcceptedCount] = useState<number | null>(null);
@@ -52,12 +55,17 @@ const Dashboard = () => {
     if (user) {
       fetchStats();
       fetchMonthlyData();
-      loadNotes();
       if (!isOnboardingDone(user.id)) {
         setShowTutorial(true);
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && tenant?.id) {
+      fetchNotes();
+    }
+  }, [user, tenant?.id]);
 
   const fetchStats = async () => {
     const [totalResult, acceptedResult, rejectedResult, pendingResult] = await Promise.all([
@@ -103,42 +111,63 @@ const Dashboard = () => {
     setMonthlyData(months);
   };
 
-  const loadNotes = () => {
-    if (!user?.id) return;
-    const saved = localStorage.getItem(`notes_${user.id}`);
-    if (saved) {
-      setNotes(JSON.parse(saved));
+  const fetchNotes = async () => {
+    if (!tenant?.id) return;
+
+    const { data, error } = await supabase
+      .from('notes')
+      .select('id, text, color, created_at, updated_by_email')
+      .eq('tenant_id', tenant.id)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setNotes(data);
     }
   };
 
-  const saveNotes = (newNotes: Note[]) => {
-    if (!user?.id) return;
-    localStorage.setItem(`notes_${user.id}`, JSON.stringify(newNotes));
-    setNotes(newNotes);
+  const addNote = async () => {
+    if (!newNote.trim() || !user?.id || !tenant?.id) return;
+
+    const { data, error } = await supabase
+      .from('notes')
+      .insert({
+        tenant_id: tenant.id,
+        user_id: user.id,
+        text: newNote.trim(),
+        color: COLORS[1].class,
+      })
+      .select('id, text, color, created_at, updated_by_email')
+      .single();
+
+    if (!error && data) {
+      setNotes((prev) => [data, ...prev]);
+      setNewNote('');
+    }
   };
 
-  const addNote = () => {
-    if (!newNote.trim()) return;
-    const blueColor = COLORS[1]; // Always use blue color
-    const note: Note = {
-      id: crypto.randomUUID(),
-      text: newNote,
-      color: blueColor.class,
-      createdAt: new Date().toISOString(),
-    };
-    saveNotes([...notes, note]);
-    setNewNote('');
+  const changeNoteColor = async (noteId: string, newColor: string) => {
+    const { data, error } = await supabase
+      .from('notes')
+      .update({
+        color: newColor,
+        updated_by_email: user?.email ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', noteId)
+      .select('id, text, color, created_at, updated_by_email')
+      .single();
+
+    if (!error && data) {
+      setNotes((prev) => prev.map((n) => (n.id === noteId ? data : n)));
+    }
   };
 
-  const changeNoteColor = (noteId: string, newColor: string) => {
-    const updatedNotes = notes.map(n => 
-      n.id === noteId ? { ...n, color: newColor } : n
-    );
-    saveNotes(updatedNotes);
-  };
+  const deleteNote = async (id: string) => {
+    const { error } = await supabase.from('notes').delete().eq('id', id);
 
-  const deleteNote = (id: string) => {
-    saveNotes(notes.filter(n => n.id !== id));
+    if (!error) {
+      setNotes((prev) => prev.filter((n) => n.id !== id));
+    }
   };
 
   const startEdit = (note: Note) => {
@@ -146,14 +175,25 @@ const Dashboard = () => {
     setEditText(note.text);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingId || !editText.trim()) return;
-    const updatedNotes = notes.map(n => 
-      n.id === editingId ? { ...n, text: editText } : n
-    );
-    saveNotes(updatedNotes);
-    setEditingId(null);
-    setEditText('');
+
+    const { data, error } = await supabase
+      .from('notes')
+      .update({
+        text: editText.trim(),
+        updated_by_email: user?.email ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', editingId)
+      .select('id, text, color, created_at, updated_by_email')
+      .single();
+
+    if (!error && data) {
+      setNotes((prev) => prev.map((n) => (n.id === editingId ? data : n)));
+      setEditingId(null);
+      setEditText('');
+    }
   };
 
   const cancelEdit = () => {
@@ -333,9 +373,14 @@ const Dashboard = () => {
                           </button>
                         </div>
                         <p className="text-sm text-foreground/90 leading-relaxed pr-12 break-words overflow-hidden font-medium">{note.text}</p>
-                        {note.createdAt && (
+                        {note.updated_by_email && (
                           <p className="text-xs text-muted-foreground mt-2">
-                            {new Date(note.createdAt).toLocaleDateString('hr-HR')}
+                            uredio: {note.updated_by_email}
+                          </p>
+                        )}
+                        {note.created_at && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(note.created_at).toLocaleDateString('hr-HR')}
                           </p>
                         )}
                       </>

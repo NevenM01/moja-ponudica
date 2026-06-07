@@ -103,6 +103,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notes: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          tenant_id: string
+          text: string
+          updated_at: string
+          updated_by_email: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          tenant_id: string
+          text: string
+          updated_at?: string
+          updated_by_email?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          tenant_id?: string
+          text?: string
+          updated_at?: string
+          updated_by_email?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_item_groups: {
         Row: {
           created_at: string
