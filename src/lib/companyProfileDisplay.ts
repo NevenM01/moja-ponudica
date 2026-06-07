@@ -46,12 +46,14 @@ export function getInstagramUrl(value: string | null | undefined): string {
 }
 
 /** Facebook: plain text only (e.g. Neven Mulavdic), no link */
-export function getFacebookDisplay(profile: { social_display_label?: string | null }): string {
+export function getFacebookDisplay(profile: { social_display_label?: string | null } | null | undefined): string {
+  if (!profile) return '';
   return (profile.social_display_label ?? '').trim();
 }
 
 /** Full display line for Facebook: "FB: Neven Mulavdic" (plain text, no link) */
-export function getFacebookDisplayLine(profile: { social_display_label?: string | null }): string {
+export function getFacebookDisplayLine(profile: { social_display_label?: string | null } | null | undefined): string {
+  if (!profile) return '';
   const name = getFacebookDisplay(profile);
   return name ? `FB: ${name}` : '';
 }
