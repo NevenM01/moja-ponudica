@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTenant } from '@/hooks/useTenant';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -159,6 +160,7 @@ function formatDraftDate(iso: string): string {
 
 const NewOffer = () => {
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -190,12 +192,12 @@ const NewOffer = () => {
   const [savingTemplate, setSavingTemplate] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && tenant?.id) {
       fetchCompanyProfile();
       generateOfferNumber();
       fetchTemplates();
     }
-  }, [user]);
+  }, [user, tenant?.id]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -375,10 +377,11 @@ const NewOffer = () => {
   }, [hasUnsavedChanges]);
 
   const fetchCompanyProfile = async () => {
+    if (!tenant?.id) return;
     const { data } = await supabase
       .from('company_profiles')
       .select('naziv_firme, oib, adresa, iban, email, telefon, web_link, instagram_link, social_display_label')
-      .eq('user_id', user?.id)
+      .eq('tenant_id', tenant.id)
       .maybeSingle();
 
     if (data) {

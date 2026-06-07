@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link, useBlocker } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTenant } from '@/hooks/useTenant';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,6 +94,7 @@ const createNewGroup = (redni_broj: number): OfferGroup => {
 const EditOffer = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { tenant } = useTenant();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -116,17 +118,17 @@ const EditOffer = () => {
   const submittedRef = useRef(false);
 
   useEffect(() => {
-    if (user && id) {
+    if (user && id && tenant?.id) {
       fetchData();
     }
-  }, [user, id]);
+  }, [user, id, tenant?.id]);
 
   const fetchData = async () => {
     const [offerResult, groupsResult, itemsResult, profileResult] = await Promise.all([
       supabase.from('offers').select('*').eq('id', id).single(),
       supabase.from('offer_item_groups').select('*').eq('offer_id', id).order('redni_broj'),
       supabase.from('offer_items').select('*').eq('offer_id', id),
-      supabase.from('company_profiles').select('naziv_firme, oib, adresa, iban, email, telefon, web_link, instagram_link, social_display_label').eq('user_id', user?.id).maybeSingle(),
+      supabase.from('company_profiles').select('naziv_firme, oib, adresa, iban, email, telefon, web_link, instagram_link, social_display_label').eq('tenant_id', tenant!.id).maybeSingle(),
     ]);
 
     if (offerResult.error) {

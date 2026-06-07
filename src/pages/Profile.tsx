@@ -55,10 +55,15 @@ const Profile = () => {
   });
   useEffect(() => {
     if (user) {
-      fetchProfile();
       fetchUserTenantId();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && userTenantId) {
+      fetchProfile();
+    }
+  }, [user, userTenantId]);
 
   const fetchUserTenantId = async () => {
     const { data } = await supabase
@@ -73,7 +78,7 @@ const Profile = () => {
     const {
       data,
       error
-    } = await supabase.from('company_profiles').select('*').eq('user_id', user?.id).maybeSingle();
+    } = await supabase.from('company_profiles').select('*').eq('tenant_id', userTenantId).maybeSingle();
     if (data) {
       setProfile({
         ...data,

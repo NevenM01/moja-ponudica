@@ -8,6 +8,7 @@ import { FileText, User, Plus, Menu, LogOut, LayoutDashboard, Sun, Moon, Setting
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
+import { useTenant } from '@/hooks/useTenant';
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -21,6 +22,7 @@ const AppLayout = ({
   const {
     isAdmin
   } = useAdmin();
+  const { tenant } = useTenant();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const {
@@ -30,16 +32,16 @@ const AppLayout = ({
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   useEffect(() => {
     const fetchCompanyProfile = async () => {
-      if (!user) return;
+      if (!user || !tenant?.id) return;
       const {
         data
-      } = await supabase.from('company_profiles').select('logo_url').eq('user_id', user.id).maybeSingle();
+      } = await supabase.from('company_profiles').select('logo_url').eq('tenant_id', tenant.id).maybeSingle();
       if (data?.logo_url) {
         setLogoUrl(data.logo_url);
       }
     };
     fetchCompanyProfile();
-  }, [user]);
+  }, [user, tenant?.id]);
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };

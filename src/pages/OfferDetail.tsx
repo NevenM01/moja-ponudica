@@ -94,7 +94,7 @@ const OfferDetail = () => {
     const { data: profileData } = await supabase
       .from('company_profiles')
       .select('*')
-      .eq('user_id', offerResult.data.user_id)
+      .eq('tenant_id', offerResult.data.tenant_id)
       .maybeSingle();
 
     setCompanyProfile(profileData);
