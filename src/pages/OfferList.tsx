@@ -92,7 +92,6 @@ const OfferList = () => {
     const { data, error } = await supabase
       .from('offers')
       .select('*')
-      .eq('user_id', user?.id)
       .neq('status', 'draft')
       .order('created_at', { ascending: false });
 
@@ -109,7 +108,6 @@ const OfferList = () => {
     const { data, error } = await supabase
       .from('offers')
       .select('id, offer_number, client_naziv, ukupno, updated_at')
-      .eq('user_id', user.id)
       .eq('status', 'draft')
       .order('updated_at', { ascending: false });
     if (!error) setDrafts(data ?? []);

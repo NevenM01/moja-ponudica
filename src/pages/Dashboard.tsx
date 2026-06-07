@@ -61,10 +61,10 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     const [totalResult, acceptedResult, rejectedResult, pendingResult] = await Promise.all([
-      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id),
-      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).eq('status', 'accepted'),
-      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).eq('status', 'rejected'),
-      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('user_id', user?.id).or('status.eq.pending,status.is.null'),
+      supabase.from('offers').select('*', { count: 'exact', head: true }),
+      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('status', 'accepted'),
+      supabase.from('offers').select('*', { count: 'exact', head: true }).eq('status', 'rejected'),
+      supabase.from('offers').select('*', { count: 'exact', head: true }).or('status.eq.pending,status.is.null'),
     ]);
 
     if (!totalResult.error) setOfferCount(totalResult.count || 0);
@@ -78,8 +78,7 @@ const Dashboard = () => {
   const fetchMonthlyData = async () => {
     const { data: offers } = await supabase
       .from('offers')
-      .select('created_at')
-      .eq('user_id', user?.id);
+      .select('created_at');
 
     if (!offers) return;
 

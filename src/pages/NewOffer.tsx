@@ -208,7 +208,6 @@ const NewOffer = () => {
           .from('offers')
           .select('id, offer_number, client_naziv, client_oib, client_adresa, objekat_naziv, objekat_opis, napomena, ukupno, updated_at')
           .eq('id', loadDraftId)
-          .eq('user_id', user.id)
           .eq('status', 'draft')
           .maybeSingle();
         if (cancelled || offerError || !offer) return;
@@ -275,7 +274,6 @@ const NewOffer = () => {
       const { data: offer, error: offerError } = await supabase
         .from('offers')
         .select('id, offer_number, client_naziv, client_oib, client_adresa, objekat_naziv, objekat_opis, napomena, ukupno, updated_at')
-        .eq('user_id', user.id)
         .eq('status', 'draft')
         .order('updated_at', { ascending: false })
         .limit(1)
