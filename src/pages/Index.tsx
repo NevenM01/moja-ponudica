@@ -67,6 +67,10 @@ const Index = () => {
     return () => document.body.classList.remove('landing');
   }, []);
 
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="relative min-h-screen overflow-x-hidden font-sans text-foreground">
       <div
@@ -83,9 +87,15 @@ const Index = () => {
           </span>
         </div>
         <nav className="flex gap-6 text-sm font-bold">
-          <a href="#znacajke" className="hover:text-primary">Značajke</a>
-          <a href="#kako-radi" className="hover:text-primary">Kako radi</a>
-          <a href="#kontakt" className="hover:text-primary">Kontakt</a>
+          <button type="button" onClick={() => scrollToSection('znacajke')} className="hover:text-primary">
+            Značajke
+          </button>
+          <button type="button" onClick={() => scrollToSection('kako-radi')} className="hover:text-primary">
+            Kako radi
+          </button>
+          <button type="button" onClick={() => scrollToSection('kontakt')} className="hover:text-primary">
+            Kontakt
+          </button>
         </nav>
         <div className="flex items-center gap-4">
           <Link to="/login" className="text-sm font-bold hover:text-primary">
