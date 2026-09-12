@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ime: string
+          poruka: string | null
+          status: string
+          telefon: string | null
+          tvrtka: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ime: string
+          poruka?: string | null
+          status?: string
+          telefon?: string | null
+          tvrtka?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ime?: string
+          poruka?: string | null
+          status?: string
+          telefon?: string | null
+          tvrtka?: string | null
+        }
+        Relationships: []
+      }
       company_profiles: {
         Row: {
           adresa: string

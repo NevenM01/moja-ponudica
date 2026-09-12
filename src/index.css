@@ -206,3 +206,13 @@ html.dark body::before {
   opacity: 0.48;
   filter: invert(1);
 }
+
+body.landing,
+html.dark body.landing {
+  background-image: none;
+  background-color: hsl(var(--background));
+}
+
+body.landing::before {
+  display: none;
+}

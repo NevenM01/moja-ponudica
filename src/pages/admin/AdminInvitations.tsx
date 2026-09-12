@@ -212,7 +212,6 @@ const AdminInvitations = () => {
           </div>
         </div>
 
-
         {/* Send invitation form */}
         <Card>
           <CardHeader>

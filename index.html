@@ -23,6 +23,15 @@
 
   <body>
     <div id="root"></div>
+    <!-- Netlify Forms: static form for build-time detection -->
+    <form name="access-request" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="ime" />
+      <input type="email" name="email" />
+      <input type="text" name="tvrtka" />
+      <input type="text" name="telefon" />
+      <textarea name="poruka"></textarea>
+      <input type="text" name="bot-field" />
+    </form>
     <script>
       if (window.location.protocol === 'file:') {
         document.getElementById('root').innerHTML = '<div style="padding: 2rem; font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; line-height: 1.6;"><h1 style="color: #333;">Otvoriš krivu datoteku</h1><p>Ova datoteka (<code>index.html</code> u korijenu) je izvorni HTML i ne radi direktno u pregledniku.</p><h2 style="color: #333; font-size: 1.1rem;">Da aplikacija radi preko file://:</h2><ol style="margin-left: 1.25rem;"><li>U terminalu: <code>cd D:\\moja-ponudica</code> pa <code>npm run build</code></li><li>U pregledniku otvori <strong>file:///D:/moja-ponudica/dist/index.html</strong> (folder <code>dist</code>, ne korijen)</li></ol><p style="margin-top: 1.5rem;">Ili pokreni dev poslužitelj: <code>npm run dev</code> i otvori <strong>http://localhost:8080</strong></p></div>';

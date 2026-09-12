@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useTenant } from "@/hooks/useTenant";
+import Index from "./pages/Index";
 import Login from "./pages/Login";
 import TrialExpired from "./pages/TrialExpired";
 import Profile from "./pages/Profile";
@@ -61,6 +62,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const RootRoute = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Učitavanje...</div>;
+  }
+
+  if (!user) {
+    return <Index />;
+  }
+
+  return <ProtectedRoute><Dashboard /></ProtectedRoute>;
+};
+
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -85,7 +100,7 @@ const router = createHashRouter(
     <>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/postavi-lozinku" element={<SetPassword />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/" element={<RootRoute />} />
       <Route path="/ponude" element={<ProtectedRoute><OfferList /></ProtectedRoute>} />
       <Route path="/profil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/nova-ponuda" element={<ProtectedRoute><NewOffer /></ProtectedRoute>} />
